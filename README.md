@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NomadHub 🍔
 
-## Getting Started
+**NomadHub** is an AI-powered SaaS platform tailored specifically for mobile F&B businesses, such as food trucks, pop-up stalls, and street food vendors. It provides a modern, clean, and mobile-first interface to help vendors manage their menus via AI and streamline their customer queues.
 
-First, run the development server:
+## 🚀 Tech Stack
 
+- **Framework**: [Next.js](https://nextjs.org/) (App Router, v15+)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Language**: TypeScript
+- **Deployment Ready**: Fully containerized with a multi-stage `Dockerfile` (optimized for Google Cloud Run / Next.js standalone mode).
+- **Design System**: Custom minimalist, bright light-mode aesthetic (Sky Blue & Emerald Green accents) using Glassmorphism.
+
+## ✨ Features Currently Implemented
+
+### 1. Landing Page (`/`)
+- A clean, modern hero section explaining the platform's value proposition to F&B owners.
+- Quick navigation to the Vendor Dashboard and the Customer Smart Queue demo.
+
+### 2. Vendor Dashboard (`/vendor`)
+- **Live Overview**: Displays a real-time (mocked) active queue counter with dynamic pulse animations.
+- **Store Status**: A prominent "Open / Closed" toggle for vendors to control their availability.
+- **Quick Actions**: Easy access to other modules like the AI Menu Manager.
+
+### 3. AI Menu Manager (`/vendor/menu`)
+- **Smart Image Upload**: Features a custom drag-and-drop image upload area (`ImageUploader` component).
+- **AI Processing Simulation**: Once a food photo is uploaded, a slick visual scanning animation simulates the AI analyzing the image.
+- **Auto-Fill Data**: After processing, it automatically generates and populates the dish's Title, a mouth-watering Description, and a Suggested Price.
+
+### 4. Customer Smart Queue (`/queue`)
+- **Digital Queueing**: A public-facing, mobile-first page for customers.
+- **Interactive Experience**: Clicking "Join Queue" triggers an AI calculation delay.
+- **Live Updates**: Displays the customer's assigned queue number and a dynamic "AI-Estimated Wait Time" that ticks down automatically.
+
+## 🛠️ Getting Started
+
+### Prerequisites
+Make sure you have Node.js installed (v18+ recommended).
+
+### Installation & Running Locally
+
+1. Install the dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Docker Build (For Cloud Run)
+
+To build the container image:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker build -t nomadhub .
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To run the container locally:
+```bash
+docker run -p 3000:3000 nomadhub
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧠 Brainstorming / Next Steps
+Use this foundation to plan further integrations! Potential ideas:
+- Integrating a real AI model (e.g., Google Cloud Vision, OpenAI Vision) into the Menu Manager.
+- Adding a real-time database (e.g., Firebase, Supabase) to sync the queue between the Vendor Dashboard and the Customer Queue.
+- Adding Auth for Vendors.
