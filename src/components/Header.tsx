@@ -15,8 +15,8 @@ export const Header: React.FC = () => {
           <Link href="/vendor" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
             Vendor
           </Link>
-          <Link href="/queue" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
-            Queue
+          <Link href="/mr-churraos" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
+            Demo Store
           </Link>
         </nav>
       </div>

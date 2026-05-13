@@ -1,67 +1,98 @@
-# NomadHub 🍔
+# NomadHub 🍔🚀
 
-**NomadHub** is an AI-powered SaaS platform tailored specifically for mobile F&B businesses, such as food trucks, pop-up stalls, and street food vendors. It provides a modern, clean, and mobile-first interface to help vendors manage their menus via AI and streamline their customer queues.
+**NomadHub** adalah platform SaaS B2B2C berbasis AI modern yang dirancang khusus untuk bisnis F&B bergerak (Mobile F&B) seperti *Food Trucks*, *Pop-up Stalls*, dan UMKM kuliner lainnya. Didesain dengan pendekatan *Mobile-First*, platform ini memberdayakan pemilik usaha untuk mengotomatisasi menu via AI, mengamankan sistem dengan otentikasi server, dan mengelola antrean pelanggan secara *real-time* dengan pengalaman pengguna yang sangat premium.
 
-## 🚀 Tech Stack
+---
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router, v15+)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Language**: TypeScript
-- **Deployment Ready**: Fully containerized with a multi-stage `Dockerfile` (optimized for Google Cloud Run / Next.js standalone mode).
-- **Design System**: Custom minimalist, bright light-mode aesthetic (Sky Blue & Emerald Green accents) using Glassmorphism.
+## ⚡ Elite Tech Stack
 
-## ✨ Features Currently Implemented
+*   **Framework Utama**: [Next.js 16+](https://nextjs.org/) (App Router & Server Actions)
+*   **Kecerdasan Buatan**: Google Generative AI SDK (**Gemini 2.5 Flash** - Vision & Text)
+*   **Database & Backend**: [Supabase](https://supabase.com/) (Postgres, Real-time & Storage)
+*   **Keamanan & Otentikasi**: Supabase SSR (Server-Side Cookie Based Auth)
+*   **Bahasa**: TypeScript (Strict Type Safety)
+*   **Styling & Animasi**: Tailwind CSS dengan konsep Glassmorphism, Canvas-Confetti & Shimmer Elements.
+*   **Sistem Notifikasi**: [Sonner Toast](https://sonner.emilkowal.ski/) (Rich Interaction Notifications)
+*   **Infrastruktur Server**: Google Cloud Run & Docker (Multi-stage Standalone Optimized)
 
-### 1. Landing Page (`/`)
-- A clean, modern hero section explaining the platform's value proposition to F&B owners.
-- Quick navigation to the Vendor Dashboard and the Customer Smart Queue demo.
+---
 
-### 2. Vendor Dashboard (`/vendor`)
-- **Live Overview**: Displays a real-time (mocked) active queue counter with dynamic pulse animations.
-- **Store Status**: A prominent "Open / Closed" toggle for vendors to control their availability.
-- **Quick Actions**: Easy access to other modules like the AI Menu Manager.
+## 🌟 Fitur-Fitur Premium & Arsitektur Inti
 
-### 3. AI Menu Manager (`/vendor/menu`)
-- **Smart Image Upload**: Features a custom drag-and-drop image upload area (`ImageUploader` component).
-- **AI Processing Simulation**: Once a food photo is uploaded, a slick visual scanning animation simulates the AI analyzing the image.
-- **Auto-Fill Data**: After processing, it automatically generates and populates the dish's Title, a mouth-watering Description, and a Suggested Price.
+### 1. Multi-Tenant Root Routing & Custom Domain (`src/proxy.ts`)
+*   **Clean URL Portofolio**: Menggunakan arsitektur Root Slug dinamis `/[vendorSlug]` (contoh: `nomadhub.app/mr-churraos`) alih-alih subfolder kaku.
+*   **Intelligent Proxy**: Middleware cerdas yang otomatis mengekstrak identitas vendor dari domain masuk untuk mendukung pemetaan domain pribadi pelanggan (*Custom Domain* seperti `namatoko.my.id`).
 
-### 4. Customer Smart Queue (`/queue`)
-- **Digital Queueing**: A public-facing, mobile-first page for customers.
-- **Interactive Experience**: Clicking "Join Queue" triggers an AI calculation delay.
-- **Live Updates**: Displays the customer's assigned queue number and a dynamic "AI-Estimated Wait Time" that ticks down automatically.
+### 2. White-Label Smart SEO Metadata (Bunglon Mode 🦎)
+*   **Deteksi Domain Adaptif**: Sistem secara dinamis mendeteksi rute akses.
+*   **Total Penyamaran**: Jika diakses via domain premium pelanggan, identitas "NomadHub" otomatis disembunyikan 100% dari mesin pencari Google dan pratinjau media sosial, diganti dengan merek asli vendor demi profesionalitas tingkat tinggi.
 
-## 🛠️ Getting Started
+### 3. Enterprise Auth & Secured Workspaces
+*   **Supabase SSR Implementation**: Seluruh akses ke Dashboard `/vendor` diproteksi oleh Middleware Server-side yang ketat dengan sistem *cookie validation*.
+*   **Logout Terproteksi**: Fitur keluar aman yang terintegrasi dengan sistem Sonner Toast Action.
 
-### Prerequisites
-Make sure you have Node.js installed (v18+ recommended).
+### 4. AI Magic Menu & Marketing Assistant (Gemini 2.5 Flash)
+*   **Vision AI 2.5 Analysis**: Mengidentifikasi jenis masakan secara otomatis dari foto makanan yang diunggah, menghasilkan nama serta rekomendasi harga secara akurat.
+*   **✨ Magic Polish Prompting**: Mesin copywriting pintar yang mengolah nama masakan menjadi deskripsi pemasaran yang menggugah selera lengkap dengan *hashtags* spesifik.
+*   **Respon Terkendali**: Menggunakan setelan paksa `responseMimeType: "application/json"` untuk memastikan struktur keluaran AI 100% stabil anti-eror.
 
-### Installation & Running Locally
+### 5. Cloud Media Vault (Supabase Storage & RLS)
+*   **Binary Secure Upload**: Mengirimkan file dari server component langsung ke Bucket Supabase menggunakan penamaan terproteksi UUID kelas militer (`crypto.randomUUID()`).
+*   **Tangguh & Terpantau**: Audit logs penuh di terminal server jika terjadi kendala RLS maupun jaringan.
 
-1. Install the dependencies:
-   ```bash
-   npm install
-   ```
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 6. Smart Real-Time Customer Queue
+*   **Live Interaction**: Menghubungkan layar pembeli dan dasbor penjual secara interaktif.
+*   **Multi-Sensory Feedback**: Saat pesanan selesai, HP pelanggan otomatis bergetar (`Vibrate API`), membunyikan bel notifikasi, dan memunculkan hujan konfeti secara bersamaan!
 
-### Docker Build (For Cloud Run)
+### 7. Ultra-Smooth Shimmer Layout (Skeleton UX)
+*   Peralihan halaman tanpa *blank-screen* menggunakan kerangka pemuatan dinamis (Skeleton UI) bawaan Next.js `loading.tsx` untuk transisi data yang selembut sutra.
 
-To build the container image:
+---
+
+## 🛠️ Menjalankan Aplikasi Lokal
+
+### Prasyarat
+*   Node.js v20 ke atas
+*   Akun Supabase (Database, Auth Email Enabled, dan Storage Bucket `menu-images` publik)
+*   Google Gemini API Key
+
+### 1. Konfigurasi Lingkungan
+Buat file `.env.local` di root direktori dan isi variabel berikut:
+```bash
+NEXT_PUBLIC_SUPABASE_URL="https://your-project-id.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+GEMINI_API_KEY="your-gemini-api-key"
+```
+
+### 2. Instalasi & Eksekusi
+```bash
+# Install dependensi
+npm install
+
+# Jalankan mode pengembangan
+npm run dev
+```
+Buka [http://localhost:3000](http://localhost:3000) pada browser Anda.
+
+---
+
+## 🚢 Panduan Produksi (Google Cloud Run)
+
+### Membangun Image Secara Lokal
 ```bash
 docker build -t nomadhub .
 ```
 
-To run the container locally:
+### Perintah Deploy Cepat (Via Google Cloud SDK)
+Pastikan Anda sudah masuk ke gcloud CLI dan jalankan:
 ```bash
-docker run -p 3000:3000 nomadhub
+gcloud run deploy nomadhub \
+  --source . \
+  --region asia-southeast2 \
+  --allow-unauthenticated \
+  --set-env-vars="GEMINI_API_KEY=isi_disini,NEXT_PUBLIC_SUPABASE_URL=isi_disini,NEXT_PUBLIC_SUPABASE_ANON_KEY=isi_disini"
 ```
 
-## 🧠 Brainstorming / Next Steps
-Use this foundation to plan further integrations! Potential ideas:
-- Integrating a real AI model (e.g., Google Cloud Vision, OpenAI Vision) into the Menu Manager.
-- Adding a real-time database (e.g., Firebase, Supabase) to sync the queue between the Vendor Dashboard and the Customer Queue.
-- Adding Auth for Vendors.
+---
+
+*NomadHub - Built with perfection for the future of mobile culinary systems.* 🍔🔥🏆

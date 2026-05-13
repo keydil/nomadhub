@@ -24,7 +24,7 @@ export default function Home() {
               Open Vendor Dashboard
             </Button>
           </Link>
-          <Link href="/queue">
+          <Link href="/mr-churraos">
             <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 bg-white">
               Try Smart Queue Demo
             </Button>
