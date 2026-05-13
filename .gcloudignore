@@ -1,0 +1,6 @@
+# Exclude large local directories
+node_modules/
+.next/
+.git/
+.env.local
+env.yaml
