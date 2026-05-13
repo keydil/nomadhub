@@ -56,7 +56,7 @@ export async function proxy(req: NextRequest) {
     'www.nomadhub.app',
     'www',
     'localhost'
-  ].includes(currentHost);
+  ].includes(currentHost) || currentHost.includes('.run.app');
 
   // EXCLUDE static framework paths explicitly if they leaked into here somehow.
   if (url.pathname.startsWith('/api') || url.pathname.startsWith('/_next')) {

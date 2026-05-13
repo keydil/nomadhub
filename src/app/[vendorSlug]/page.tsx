@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Tentukan apakah dia sedang diakses lewat domain kustom (misal: .my.id atau selain domain utama kita)
   // Jika di local testing, localhost:3000 dianggap domain utama kita.
   const isCustomDomain = host.includes('.my.id') || 
-    (!host.includes('nomadhub.app') && !host.includes('localhost:3000'));
+    (!host.includes('nomadhub.app') && !host.includes('localhost:3000') && !host.includes('.run.app'));
 
   // KONDISI A: WHITE-LABEL (DOMIAN PREMIUM)
   if (isCustomDomain) {
