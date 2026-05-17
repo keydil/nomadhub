@@ -27,6 +27,7 @@ export default function AIMenuManager() {
   // Form fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [hashtags, setHashtags] = useState<string[]>([]);
   const [price, setPrice] = useState('');
   
   // State for actions
@@ -53,22 +54,60 @@ export default function AIMenuManager() {
     }
   };
 
+  const compressImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          const MAX_WIDTH = 800;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Canvas to Blob failed'));
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleImageSelected = async (file: File) => {
     setImageFile(file);
     setIsProcessing(true);
     setProgress(0);
     setIsComplete(false);
     
-    // Optional: We could NOT clear fields if you just want to attach image, but analysis overrides usually.
-    // Let's analyze automatically on select as before:
-    
     const progressInterval = setInterval(() => {
       setProgress(prev => (prev < 90 ? prev + 10 : prev));
     }, 300);
 
     try {
+      // Step 1: Compress image before sending
+      const compressedBlob = await compressImage(file);
+      
       const formData = new FormData();
-      formData.append('image', file);
+      // Use compressed blob instead of raw file
+      formData.append('image', compressedBlob, 'compressed_food.jpg');
 
       const response = await fetch('/api/analyze-food', {
         method: 'POST',
@@ -85,10 +124,9 @@ export default function AIMenuManager() {
       setDescription(data.description || '');
       setPrice(data.suggestedPrice || '');
       
-      
     } catch (error) {
       console.error(error);
-      toast.error('Analisis visual AI sedang sibuk. Foto berhasil dimuat.', { description: 'Anda bisa mengetik detail manual.' });
+      toast.error('Analisis visual AI sedang sibuk.', { description: 'Ukuran gambar sudah dioptimasi, namun server mungkin sedang penuh.' });
     } finally {
       clearInterval(progressInterval);
       setProgress(100);
@@ -116,7 +154,13 @@ export default function AIMenuManager() {
       if (!res.ok) throw new Error('Polish failed');
 
       const data = await res.json();
-      setDescription(data.description);
+      
+      // Separate description and hashtags for editing
+      if (data.result) {
+        setDescription(data.result.description);
+        setHashtags(data.result.hashtags || []);
+      }
+      
       toast.success('Teks berhasil disulap! 🔮');
     } catch (error) {
       console.error(error);
@@ -150,14 +194,20 @@ export default function AIMenuManager() {
         }
       }
 
-      // Second step: Save final row to database
-      await saveMenuItem(title, description, price, uploadedUrl);
+      // Second step: Save final row to database (Wrap as JSON)
+      const structuredDescription = JSON.stringify({
+        description: description,
+        hashtags: hashtags
+      });
+
+      await saveMenuItem(title, structuredDescription, price, uploadedUrl);
       
       await loadMenu();
       
       // Reset UI state completely
       setTitle('');
       setDescription('');
+      setHashtags([]);
       setPrice('');
       setIsComplete(false);
       setImageFile(null);
@@ -259,6 +309,17 @@ export default function AIMenuManager() {
                   rows={5}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-50 outline-none transition-all resize-none text-sm text-slate-700 leading-relaxed"
                 ></textarea>
+
+                {/* Hashtag Preview in Form */}
+                {hashtags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {hashtags.map((tag, i) => (
+                      <span key={i} className="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-100">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -354,7 +415,34 @@ export default function AIMenuManager() {
                 </div>
                 <CardContent className="p-5 flex-1 flex flex-col">
                   <h4 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">{item.title}</h4>
-                  <p className="text-slate-500 text-sm line-clamp-3 flex-1 whitespace-pre-wrap">{item.description}</p>
+                  <p className="text-slate-500 text-sm line-clamp-3 flex-1 whitespace-pre-wrap">
+                    {(() => {
+                      try {
+                        const parsed = JSON.parse(item.description);
+                        return parsed.description || item.description;
+                      } catch {
+                        return item.description;
+                      }
+                    })()}
+                  </p>
+                  
+                  {/* Hashtag chips in manager list */}
+                  {(() => {
+                    try {
+                      const parsed = JSON.parse(item.description);
+                      if (parsed.hashtags) {
+                        return (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {parsed.hashtags.map((tag: string, i: number) => (
+                              <span key={i} className="text-[9px] text-slate-400">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      }
+                    } catch { return null; }
+                  })()}
                 </CardContent>
               </Card>
             ))}

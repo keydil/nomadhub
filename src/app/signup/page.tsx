@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { login, signInWithGoogle } from '@/app/auth-actions';
+import { signup, signInWithGoogle } from '@/app/auth-actions';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -29,43 +29,44 @@ export default function LoginPage() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const result = await login(formData);
+    const result = await signup(formData);
 
     if (result?.error) {
       setError(result.error);
       setIsLoading(false);
-      toast.error('Login failed', { description: result.error });
+      toast.error('Signup failed', { description: result.error });
     } else {
-      toast.success('Welcome back to NomadHub! 👋');
+      toast.success('Account created! Welcome to NomadHub. 🎉');
+      // Redirect handled by the server action
     }
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* Left Panel - Branding & Image */}
+    <div className="flex min-h-screen bg-white flex-row-reverse">
+      {/* Right Panel - Branding & Image (Reversed for Signup to look distinct but unified) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
         <Image 
           src="/auth-bg.png" 
           alt="NomadHub Luxury Aesthetic" 
           fill
           priority
-          className="object-cover opacity-60 mix-blend-overlay"
+          className="object-cover opacity-60 mix-blend-overlay scale-x-[-1]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
         <div className="relative z-10 flex flex-col justify-end p-16 h-full text-white">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center shadow-xl shadow-sky-500/20 mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-emerald-500 flex items-center justify-center shadow-xl shadow-sky-500/20 mb-8">
             <span className="font-black text-3xl">N</span>
           </div>
           <h2 className="text-5xl font-black tracking-tight leading-tight mb-6">
-            Manage your <br/>mobile empire.
+            Start your <br/>journey today.
           </h2>
           <p className="text-lg text-slate-300 max-w-md leading-relaxed font-medium">
-            Join the elite network of mobile F&B businesses. Streamline orders, manage queues, and grow your revenue seamlessly.
+            Create an elite storefront in seconds. Manage menus with AI and completely eliminate chaotic queues.
           </p>
         </div>
       </div>
 
-      {/* Right Panel - Form */}
+      {/* Left Panel - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 xl:p-24 bg-white relative">
         {/* Mobile Logo */}
         <div className="absolute top-8 left-8 lg:hidden flex items-center gap-3">
@@ -77,8 +78,8 @@ export default function LoginPage() {
 
         <div className="w-full max-w-md mx-auto space-y-8">
           <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Welcome back</h1>
-            <p className="text-slate-500 font-medium">Enter your credentials to access your dashboard.</p>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Create an account</h1>
+            <p className="text-slate-500 font-medium">Enter your details below to set up your store.</p>
           </div>
 
           <div className="space-y-6">
@@ -98,7 +99,7 @@ export default function LoginPage() {
                   <path d="M1 1h22v22H1z" fill="none"/>
                 </svg>
               )}
-              Continue with Google
+              Sign up with Google
             </button>
 
             <div className="relative flex items-center py-2">
@@ -129,19 +130,15 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
-                  <label htmlFor="password" className="text-sm font-bold text-slate-700">
-                    Password
-                  </label>
-                  <Link href="#" className="text-xs font-bold text-sky-500 hover:text-sky-600 transition-colors">
-                    Forgot?
-                  </Link>
-                </div>
+                <label htmlFor="password" className="text-sm font-bold text-slate-700 ml-1">
+                  Password
+                </label>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   required
+                  minLength={6}
                   placeholder="••••••••"
                   className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 font-medium placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none transition-all"
                 />
@@ -157,19 +154,19 @@ export default function LoginPage() {
                 {isLoading ? (
                   <span className="flex items-center gap-3">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
+                    Creating account...
                   </span>
                 ) : (
-                  'Sign In'
+                  'Create Account'
                 )}
               </Button>
             </form>
           </div>
 
           <p className="text-center text-sm font-medium text-slate-500 pt-6">
-            Don't have an account yet?{' '}
-            <Link href="/signup" className="font-bold text-sky-500 hover:text-sky-600 transition-colors">
-              Create a store
+            Already have an account?{' '}
+            <Link href="/login" className="font-bold text-sky-500 hover:text-sky-600 transition-colors">
+              Sign in
             </Link>
           </p>
         </div>

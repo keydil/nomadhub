@@ -23,7 +23,7 @@ export async function proxy(req: NextRequest) {
   // -- AUTH GUARD START --
   
   // If user tries to access dashboard but isn't logged in, direct them away securely.
-  if (url.pathname.startsWith('/vendor') && !user) {
+  if ((url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/onboarding')) && !user) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = '/login';
     // Preserve redirect parameter to let them come back optionally, but simpler for now:
@@ -33,7 +33,7 @@ export async function proxy(req: NextRequest) {
   // Prevent infinite looping if logged in users visit login page
   if (url.pathname === '/login' && user) {
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/vendor';
+    redirectUrl.pathname = '/dashboard';
     return NextResponse.redirect(redirectUrl);
   }
   
@@ -53,6 +53,8 @@ export async function proxy(req: NextRequest) {
   const isMainDomain = [
     'nomadhub.app',
     'localhost:3000',
+    '10.193.1.200:3000',
+    '10.193.1.200',
     'www.nomadhub.app',
     'www',
     'localhost'
@@ -64,8 +66,8 @@ export async function proxy(req: NextRequest) {
   }
 
   // If it's main domain, allow navigation naturally (along with auth updates).
-  // Also ensure we do NOT rewrite dynamic paths inside main dashboards (like /vendor or /login)
-  if (isMainDomain || url.pathname.startsWith('/vendor') || url.pathname.startsWith('/login')) {
+  // Also ensure we do NOT rewrite dynamic paths inside main dashboards (like /dashboard or /login)
+  if (isMainDomain || url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/onboarding') || url.pathname.startsWith('/login')) {
     return supabaseResponse;
   }
 

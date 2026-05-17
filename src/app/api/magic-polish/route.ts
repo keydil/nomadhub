@@ -15,27 +15,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Food title is required' }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    console.log(`\x1b[45m[AI QUOTA]\x1b[0m Polishing item: ${title}`);
 
-    // IMPORTANT PROMPT ADJUSTMENT:
-    // Focus entirely on the input dish, unrelated to general store constraints.
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-3.1-flash-lite',
+      generationConfig: { responseMimeType: "application/json" }
+    });
+
     const prompt = `
-      You are a professional Indonesian culinary copywriter.
-      The user provides the name of a specific food item: "${title}"
+      You are a professional Indonesian high-end culinary copywriter.
+      The user provides the name of a specific food item: "\${title}"
       
-      Write a high-conversion, mouth-watering marketing description for exactly this item.
-      Even though the shop name may vary, DO NOT focus on the shop name. Focus 100% on the TASTE, TEXTURE, and EXPERIENCE of eating "${title}".
+      Write a mouth-watering marketing description and relevant hashtags.
       
-      At the end of the description, add 3-5 relevant Instagram-style hashtags specific to this dish.
+      OUTPUT FORMAT (MUST BE PURE JSON):
+      {
+        "description": "Maksimal 2 kalimat singkat, fokus pada rasa/tekstur, elegan dan mewah",
+        "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
+      }
       
-      Return raw string text output directly. No JSON, no wrappers. Just the final description text ready to be pasted.
+      RULES:
+      1. Elegant and elite tone of voice.
+      2. No hashtags inside the description field.
+      3. Exactly 5 relevant Indonesian food hashtags in the array.
+      4. Description MUST NOT exceed 2 short sentences.
     `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const polishedText = response.text().trim();
+    const polishedJson = response.text().trim();
 
-    return NextResponse.json({ description: polishedText });
+    return NextResponse.json({ result: JSON.parse(polishedJson) });
   } catch (error: any) {
     console.error('Error generating magic polish:', error);
     return NextResponse.json({ error: error.message || 'Failed to polish description' }, { status: 500 });

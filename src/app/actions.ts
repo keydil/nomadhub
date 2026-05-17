@@ -4,43 +4,61 @@ import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 import { createClient as createServerSupabase } from '@/utils/supabase/server';
 
-// Hardcoded vendor ID for demo (Assuming this matches a UUID in your DB or we lookup by slug)
-// For a real app, this comes from auth context.
-const DEFAULT_VENDOR_SLUG = 'mr-churraos';
+// We no longer use a hardcoded default slug for dashboard actions.
+// Instead, we derive the vendor ID from the currently authenticated user.
 
-// Utility to get the default vendor ID based on slug/id
+// Utility to get the default vendor ID based on logged in user's owner_id
 async function getDefaultVendorId() {
-  const { data, error } = await supabase
+  const sb = await createServerSupabase();
+  const { data: { user } } = await sb.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await sb
     .from('vendors')
     .select('id')
-    .eq('id', DEFAULT_VENDOR_SLUG)
+    .eq('owner_id', user.id)
     .single();
     
   if (error || !data) {
-    console.error("Error fetching default vendor ID:", error);
+    console.error("Error fetching vendor ID for user:", error?.message);
     return null;
   }
   return data.id;
 }
 
+import { checkVendorStatus } from '@/utils/vendorStatus';
+
 export async function fetchVendor() {
-  const { data, error } = await supabase
+  const vendorId = await getDefaultVendorId();
+  if (!vendorId) return null;
+
+  const sb = await createServerSupabase();
+  const { data, error } = await sb
     .from('vendors')
     .select('*')
-    .eq('id', DEFAULT_VENDOR_SLUG)
+    .eq('id', vendorId)
     .single();
 
-  if (error) {
-    console.error('Error fetching vendor:', error);
+  if (error || !data) {
+    console.error('Error fetching vendor:', error?.message);
     return null;
   }
   
-  // Transform to match old mock DB format if necessary
+  // Dynamic status check using our new utility
+  const isOpen = checkVendorStatus({
+    is_manually_closed: data.is_manually_closed,
+    opening_time: data.opening_time,
+    closing_time: data.closing_time
+  });
+
   return {
     ...data,
-    slug: data.id, // Map id to slug for frontend compatibility
-    status: data.status || 'open', // Default if column missing
-    activeQueueCount: data.active_queue_count || 0 // Default if column missing
+    slug: data.id,
+    status: isOpen ? 'open' : 'closed',
+    activeQueueCount: data.active_queue_count || 0
   };
 }
 
@@ -48,13 +66,17 @@ export async function setVendorStatus(status: 'open' | 'closed') {
   const vendorId = await getDefaultVendorId();
   if (!vendorId) return;
 
-  await supabase
+  // Now we update is_manually_closed instead of just a 'status' string
+  const isManuallyClosed = status === 'closed';
+
+  const sb = await createServerSupabase();
+  await sb
     .from('vendors')
-    .update({ status })
+    .update({ is_manually_closed: isManuallyClosed })
     .eq('id', vendorId);
 
-  revalidatePath('/vendor');
-  revalidatePath(`/${DEFAULT_VENDOR_SLUG}`);
+  revalidatePath('/dashboard');
+  revalidatePath(`/${vendorId}`);
 }
 
 export async function setVendorLocation(location: string) {
@@ -66,8 +88,8 @@ export async function setVendorLocation(location: string) {
     .update({ location })
     .eq('id', vendorId);
 
-  revalidatePath('/vendor');
-  revalidatePath(`/${DEFAULT_VENDOR_SLUG}`);
+  revalidatePath('/dashboard');
+  revalidatePath(`/${vendorId}`);
 }
 
 export async function fetchMenu() {
@@ -113,8 +135,8 @@ export async function saveMenuItem(title: string, description: string, price: st
     return;
   }
 
-  revalidatePath('/vendor/menu');
-  revalidatePath(`/${DEFAULT_VENDOR_SLUG}`);
+  revalidatePath('/dashboard/menu');
+  revalidatePath(`/${vendorId}`);
 }
 
 export async function uploadMenuImage(formData: FormData) {
@@ -165,10 +187,16 @@ export async function getVendorBySlug(slug: string) {
 
   if (error || !data) return null;
 
+  const isOpen = checkVendorStatus({
+    is_manually_closed: data.is_manually_closed,
+    opening_time: data.opening_time,
+    closing_time: data.closing_time
+  });
+
   return {
     ...data,
     slug: data.id,
-    status: data.status || 'open',
+    status: isOpen ? 'open' : 'closed',
     activeQueueCount: data.active_queue_count || 0
   };
 }
@@ -216,7 +244,7 @@ export async function joinQueue(vendorId: string, customerName: string) {
   }
   
   revalidatePath(`/${vendorId}`);
-  revalidatePath('/vendor');
+  revalidatePath('/dashboard');
   return data;
 }
 
@@ -253,8 +281,8 @@ export async function updateQueueStatus(queueId: string, status: 'completed' | '
     return;
   }
 
-  revalidatePath('/vendor');
-  revalidatePath(`/${DEFAULT_VENDOR_SLUG}`);
+  revalidatePath('/dashboard');
+  revalidatePath(`/${vendorId}`);
 }
 
 export async function checkQueueStatus(queueId: string) {

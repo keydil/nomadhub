@@ -1,7 +1,16 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export const Header: React.FC = () => {
+  const pathname = usePathname();
+
+  // Hide header on vendor storefront pages
+  const isStorefront = pathname !== '/' && !pathname?.startsWith('/dashboard') && !pathname?.startsWith('/login') && !pathname?.startsWith('/signup') && !pathname?.startsWith('/onboarding');
+  if (isStorefront) return null;
+
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-slate-200">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -12,8 +21,8 @@ export const Header: React.FC = () => {
           <span className="font-bold text-xl tracking-tight text-slate-800">NomadHub</span>
         </Link>
         <nav className="flex items-center gap-4">
-          <Link href="/vendor" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
-            Vendor
+          <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
+            Dashboard
           </Link>
           <Link href="/mr-churraos" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
             Demo Store

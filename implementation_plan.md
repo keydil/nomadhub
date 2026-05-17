@@ -5,18 +5,25 @@ Tujuan dokumen ini adalah merangkum dan melacak rencana strategis pengembangan N
 ---
 
 ## 🎨 FASE 1: ELITE UI/UX & VISUAL REDESIGN (Current Priority)
-Fokus utama saat ini adalah mempercantik visual, memperbaiki pengalaman pengguna (UX), dan menyusun panduan seni (Art Direction) yang premium sebelum menyentuh logika bisnis lebih lanjut.
+Fokus utama saat ini adalah merombak Storefront Vendor menjadi pengalaman yang imersif, cerdas, dan premium menggunakan pendekatan *Progressive Disclosure* dan *Hyper-Personalized AI UI*.
+
+### 🛠️ Technical Stack Tambahan:
+*   **Animations**: `framer-motion` (untuk transisi selembut sutra).
+*   **Icons**: `lucide-react` (ikon minimalis modern).
+*   **Utility**: `clsx`, `tailwind-merge` (untuk manajemen class Tailwind yang rapi).
+
+### 🏗️ Arsitektur Komponen Storefront (`src/components/storefront/`):
+1.  **`StorefrontLayout`**: Wrapper utama dengan sistem *scroll-driven animations*.
+2.  **`HeroProduct`**: Visual utama yang imersif (Progressive Disclosure).
+3.  **`AIRecommendation`**: Section khusus rekomendasi cerdas berbasis konteks.
+4.  **`MenuCatalog`**: Katalog menu modular dengan kategori.
+5.  **`MenuItemCard`**: Kartu menu individual dengan detail yang bisa di-expand (Disclosure).
+6.  **`FloatingCart`**: Keranjang melayang yang minimalis.
 
 ### 💡 Rencana Peningkatan Desain:
-1.  **Pengumpulan Referensi (Moodboarding)**:
-    *   Mencari inspirasi layout SaaS modern berbasis mobile (seperti Bento Grid, Uber Eats UX, atau Stripe Dashboard).
-    *   Menentukan skema tipografi (misal: Inter, Outfit, atau Satoshi) dan palet warna gelap/terang yang sangat kontras & harmonis.
-2.  **Desain Ulang Komponen Utama**:
-    *   *Landing Page*: Membuat transisi hero section lebih dinamis.
-    *   *Storefront Vendor*: Membuat daftar menu terlihat lebih "lezat" dengan layout grid bento modern, kartu mengambang, dan detail modal.
-    *   *Dashboard Vendor*: Merapikan penataan kartu statistik agar lebih intuitif diakses lewat HP satu tangan.
-3.  **Implementasi Animasi Mikro**:
-    *   Menggunakan pustaka animasi ringan (seperti Framer Motion) untuk transisi kartu, *hover effect*, dan interaksi antar elemen agar UI terasa "hidup".
+1.  **Immersive Reveal**: Saat halaman dimuat, tampilkan Hero Product secara penuh, lalu munculkan elemen lain saat user mulai scroll.
+2.  **Context-Aware UI**: Menampilkan salam dan rekomendasi berbeda berdasarkan waktu (Pagi/Siang/Malam).
+3.  **Micro-Interactions**: Efek *haptic-like* pada tombol dan kartu menu.
 
 ---
 
@@ -44,4 +51,4 @@ Mematangkan fitur Bunglon (White-Label) agar berfungsi nyata di internet menggun
 
 ---
 
-*Status: Menunggu referensi desain visual dari Anda untuk mulai mengeksekusi Fase 1.* 📐🎨✨
+*Status: Memulai implementasi teknis komponen Storefront.* 📐🎨✨
