@@ -27,9 +27,11 @@
 *   **Deteksi Domain Adaptif**: Sistem secara dinamis mendeteksi rute akses.
 *   **Total Penyamaran**: Jika diakses via domain premium pelanggan, identitas "NomadHub" otomatis disembunyikan 100% dari mesin pencari Google dan pratinjau media sosial, diganti dengan merek asli vendor demi profesionalitas tingkat tinggi.
 
-### 3. Enterprise Auth & Secured Workspaces
-*   **Supabase SSR Implementation**: Seluruh akses ke Dashboard `/vendor` diproteksi oleh Middleware Server-side yang ketat dengan sistem *cookie validation*.
-*   **Logout Terproteksi**: Fitur keluar aman yang terintegrasi dengan sistem Sonner Toast Action.
+### 3. Enterprise Auth & Secured Workspaces (Multi-Tenant Engine)
+*   **Elite Auth Flow**: Desain halaman `/login` dan `/signup` bergaya premium dengan dukungan multi-login (Google OAuth & Email/Password).
+*   **Dynamic Onboarding**: Alur pendaftaran vendor otomatis yang terintegrasi di halaman `/onboarding` untuk mengonfigurasi *Store Name*, *Description*, dan *Slug* URL.
+*   **Supabase SSR Middleware**: Seluruh akses ke `/dashboard` dan `/onboarding` diproteksi secara ketat menggunakan *Server-side Middleware*. Pengguna yang belum *login* dialihkan ke `/login`, sedangkan pengguna terautentikasi yang belum memiliki toko dialihkan ke alur pendaftaran.
+*   **Tenant Isolation**: Akses data (*menu*, *queue*, *store status*) terikat erat dengan identitas pengguna (`owner_id`), bukan URL statis, menjamin isolasi data antar penyewa (*tenant*).
 
 ### 4. AI Magic Menu & Marketing Assistant (Gemini 2.5 Flash)
 *   **Vision AI 2.5 Analysis**: Mengidentifikasi jenis masakan secara otomatis dari foto makanan yang diunggah, menghasilkan nama serta rekomendasi harga secara akurat.
