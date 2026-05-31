@@ -45,7 +45,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
       viewport={{ once: true }}
       className={cn(
         "group relative overflow-hidden rounded-3xl bg-white transition-all",
-        isExpanded ? "ring-2 ring-sky-500 shadow-2xl z-20" : "hover:shadow-xl border border-slate-100"
+        isExpanded ? "ring-1 ring-blue-900/20 shadow-2xl shadow-blue-900/10 z-20" : "hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
       )}
     >
       <div className="flex flex-col sm:flex-row">
@@ -77,10 +77,10 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
         {/* Content */}
         <div className="flex flex-1 flex-col p-6">
           <div className="mb-2 flex items-start justify-between">
-            <h3 className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">
+            <h3 className="text-xl font-serif font-bold tracking-tight text-slate-900 group-hover:text-blue-900 transition-colors">
               {item.title}
             </h3>
-            <span className="font-black text-sky-600">Rp {item.price}</span>
+            <span className="font-black text-amber-600">Rp {item.price}</span>
           </div>
 
           <div className="relative">
@@ -103,7 +103,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
                   e.stopPropagation();
                   setIsExpanded(true);
                 }}
-                className="mt-1 text-[10px] font-bold uppercase tracking-wider text-sky-500 hover:text-sky-600"
+                className="mt-1 text-[10px] font-bold uppercase tracking-wider text-amber-600 hover:text-amber-700"
               >
                 Baca selengkapnya
               </button>
@@ -145,7 +145,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
                 
                 <button 
                   onClick={handleAddToCart}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition-all hover:bg-sky-600 active:scale-95"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-950 py-3 text-sm font-bold text-amber-50 transition-all hover:bg-blue-900 active:scale-95 shadow-md"
                 >
                   <Plus className="h-4 w-4" />
                   Add to My Order
@@ -164,7 +164,7 @@ export function MenuItemCard({ item }: MenuItemCardProps) {
               </div>
               <button 
                 onClick={handleAddToCart}
-                className="rounded-full bg-slate-100 p-2 text-slate-900 transition-all hover:bg-sky-500 hover:text-white active:scale-90"
+                className="rounded-full bg-slate-50 p-2 text-blue-900 transition-all hover:bg-blue-900 hover:text-white active:scale-90 border border-slate-100 shadow-sm"
               >
                 <Plus className="h-4 w-4" />
               </button>

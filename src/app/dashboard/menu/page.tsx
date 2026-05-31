@@ -16,6 +16,7 @@ interface MenuItem {
   description: string;
   price: string;
   imageUrl?: string;
+  category?: string;
 }
 
 export default function AIMenuManager() {
@@ -29,6 +30,7 @@ export default function AIMenuManager() {
   const [description, setDescription] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('');
   
   // State for actions
   const [isPolishing, setIsPolishing] = useState(false);
@@ -123,6 +125,7 @@ export default function AIMenuManager() {
       setTitle(data.title || '');
       setDescription(data.description || '');
       setPrice(data.suggestedPrice || '');
+      if (data.category) setCategory(data.category);
       
     } catch (error) {
       console.error(error);
@@ -200,7 +203,7 @@ export default function AIMenuManager() {
         hashtags: hashtags
       });
 
-      await saveMenuItem(title, structuredDescription, price, uploadedUrl);
+      await saveMenuItem(title, structuredDescription, price, uploadedUrl, category || 'Lainnya');
       
       await loadMenu();
       
@@ -209,6 +212,7 @@ export default function AIMenuManager() {
       setDescription('');
       setHashtags([]);
       setPrice('');
+      setCategory('');
       setIsComplete(false);
       setImageFile(null);
       toast.success('Item berhasil diterbitkan ke menu publik! 🚀');
@@ -224,7 +228,7 @@ export default function AIMenuManager() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/vendor" className="text-slate-500 hover:text-slate-800 transition-colors">
+          <Link href="/dashboard" className="text-slate-500 hover:text-slate-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -286,6 +290,17 @@ export default function AIMenuManager() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Misal: Dimsum Mentai Mozarella"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-50 outline-none transition-all font-medium text-slate-900"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-slate-700">Kategori</label>
+                <input 
+                  type="text" 
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Misal: Minuman, Makanan Utama, Snack"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-50 outline-none transition-all font-medium text-slate-900"
                 />
               </div>
@@ -412,6 +427,11 @@ export default function AIMenuManager() {
                   <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm text-sm font-black text-slate-900">
                     Rp {item.price}
                   </div>
+                  {item.category && item.category !== 'Lainnya' && (
+                    <div className="absolute top-3 left-3 bg-sky-500/90 backdrop-blur px-2 py-0.5 rounded-md shadow-sm text-[10px] font-bold text-white uppercase tracking-wider">
+                      {item.category}
+                    </div>
+                  )}
                 </div>
                 <CardContent className="p-5 flex-1 flex flex-col">
                   <h4 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-sky-600 transition-colors">{item.title}</h4>

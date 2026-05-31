@@ -42,12 +42,14 @@
 *   **Binary Secure Upload**: Mengirimkan file dari server component langsung ke Bucket Supabase menggunakan penamaan terproteksi UUID kelas militer (`crypto.randomUUID()`).
 *   **Tangguh & Terpantau**: Audit logs penuh di terminal server jika terjadi kendala RLS maupun jaringan.
 
-### 6. Smart Real-Time Customer Queue
+### 6. Smart Real-Time Customer Queue & Playful UI
 *   **Live Interaction**: Menghubungkan layar pembeli dan dasbor penjual secara interaktif.
-*   **Multi-Sensory Feedback**: Saat pesanan selesai, HP pelanggan otomatis bergetar (`Vibrate API`), membunyikan bel notifikasi, dan memunculkan hujan konfeti secara bersamaan!
+*   **Playful Animation**: Menyajikan desain premium untuk pelacakan pesanan (Orders Tab) dengan animasi "LiveQueueTracker" (Roda dinamis, Kurir motor meluncur untuk *Delivery*, dan animasi memantul untuk *Pickup*).
+*   **Multi-Sensory Feedback**: Saat pesanan selesai, HP pelanggan otomatis bergetar (`Vibrate API`), membunyikan bel notifikasi, dan memunculkan hujan konfeti ganda!
 
-### 7. Ultra-Smooth Shimmer Layout (Skeleton UX)
+### 7. Ultra-Smooth Shimmer Layout & Vendor Isolation
 *   Peralihan halaman tanpa *blank-screen* menggunakan kerangka pemuatan dinamis (Skeleton UI) bawaan Next.js `loading.tsx` untuk transisi data yang selembut sutra.
+*   **Strict Multi-Tenant Isolation**: Menjamin keamanan data antar penyewa, memisahkan secara ketat *Real-time Subscription*, keranjang belanja, hingga status pembayaran (mendukung alur QRIS interaktif).
 
 ---
 

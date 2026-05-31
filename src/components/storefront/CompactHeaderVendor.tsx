@@ -4,14 +4,17 @@ import React from 'react';
 import { MapPin, Phone, Map } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { checkVendorStatus } from '@/utils/vendorLogic';
+import { EcosystemDrawer } from './EcosystemDrawer';
 
 interface CompactHeaderVendorProps {
   vendor: {
+    id: string;
     name: string;
     location?: string;
     is_manually_closed: boolean;
     opening_time: string;
     closing_time: string;
+    logo_url?: string;
   };
   onClose: () => void;
 }
@@ -24,13 +27,24 @@ export function CompactHeaderVendor({ vendor, onClose }: CompactHeaderVendorProp
   const isOpen = currentStatus === 'OPEN';
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-lg">
-          {vendor.name.charAt(0)}
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-xl border-b border-blue-900/10 shadow-sm px-4 sm:px-6 py-4 flex items-center justify-between transition-all">
+      <div className="flex items-center">
+        <EcosystemDrawer currentVendorId={vendor.id} />
+        <div className="flex items-center gap-3">
+          <div className={cn(
+          "w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shadow-inner ring-1 ring-blue-900/20 overflow-hidden shrink-0",
+          vendor.logo_url 
+            ? "bg-white p-0.5" // Clean background for transparent logos
+            : "bg-gradient-to-br from-blue-800 to-blue-950 text-amber-100"
+        )}>
+          {vendor.logo_url ? (
+            <img src={vendor.logo_url} alt={`${vendor.name} logo`} className="w-full h-full object-contain" />
+          ) : (
+            vendor.name.charAt(0)
+          )}
         </div>
         <div>
-          <h1 className="text-lg font-black tracking-tight text-slate-900 leading-none mb-1">{vendor.name}</h1>
+          <h1 className="text-lg font-black tracking-tight text-blue-950 leading-none mb-1">{vendor.name}</h1>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <div className={cn(
@@ -53,18 +67,19 @@ export function CompactHeaderVendor({ vendor, onClose }: CompactHeaderVendorProp
           </div>
         </div>
       </div>
+      </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <a 
           href={mapUrl} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition-all border border-slate-100"
+          className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-blue-900 hover:bg-blue-50 hover:text-blue-700 transition-all border border-blue-900/10 shadow-sm"
         >
           <Map className="w-4 h-4" />
         </a>
         <button 
-          className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition-all border border-slate-100"
+          className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-blue-900 hover:bg-blue-50 hover:text-blue-700 transition-all border border-blue-900/10 shadow-sm"
         >
           <Phone className="w-4 h-4" />
         </button>

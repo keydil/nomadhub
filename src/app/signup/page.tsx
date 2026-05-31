@@ -2,172 +2,298 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { signup, signInWithGoogle } from '@/app/auth-actions';
-import { Button } from '@/components/ui/Button';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2, Sparkles, Building, Store } from 'lucide-react';
+import { signupWithStore, signInWithGoogle } from '@/app/auth-actions';
 import { toast } from 'sonner';
 
-export default function SignupPage() {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+const bakeryBg = '/luxurious_bakery_marble_counter_1779843206730.png';
 
-  async function handleGoogleLogin() {
+export default function SignupPage() {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [storeName, setStoreName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleGoogleSignup = async () => {
     setIsGoogleLoading(true);
-    setError(null);
+    setErrorMessage('');
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || 'Failed to authenticate with Google');
+      setErrorMessage(err.message || 'Failed to authenticate with Google');
       setIsGoogleLoading(false);
     }
-  }
+  };
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage('');
 
-    const formData = new FormData(event.currentTarget);
-    const result = await signup(formData);
+    const formData = new FormData(e.currentTarget);
+    const storeName = formData.get('storeName') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email.trim() || password.length < 6 || !storeName.trim()) {
+      setErrorMessage('Please fill in all fields (password min. 6 characters)');
+      setLoading(false);
+      return;
+    }
+
+    const result = await signupWithStore(formData);
 
     if (result?.error) {
-      setError(result.error);
-      setIsLoading(false);
+      setErrorMessage(result.error);
+      setLoading(false);
       toast.error('Signup failed', { description: result.error });
     } else {
-      toast.success('Account created! Welcome to NomadHub. 🎉');
-      // Redirect handled by the server action
+      toast.success('Boutique Account Created!', {
+        description: 'Loading your interactive elite console...',
+        icon: <Sparkles className="h-4 w-4 text-emerald-500" />
+      });
+      // The server action handles redirection to /dashboard
     }
-  }
+  };
 
   return (
-    <div className="flex min-h-screen bg-white flex-row-reverse">
-      {/* Right Panel - Branding & Image (Reversed for Signup to look distinct but unified) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
-        <Image 
-          src="/auth-bg.png" 
-          alt="NomadHub Luxury Aesthetic" 
-          fill
-          priority
-          className="object-cover opacity-60 mix-blend-overlay scale-x-[-1]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
-        <div className="relative z-10 flex flex-col justify-end p-16 h-full text-white">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-emerald-500 flex items-center justify-center shadow-xl shadow-sky-500/20 mb-8">
-            <span className="font-black text-3xl">N</span>
+    <div className="flex min-h-screen w-full bg-white text-slate-800" id="signup-container">
+      {/* LEFT SIDE: Interactive Signup Form */}
+      <div className="flex w-full flex-col justify-between px-6 py-12 md:w-1/2 md:px-12 lg:w-[45%] lg:px-20" id="signup-form-side">
+        <div className="flex items-center justify-between pb-6 border-b border-slate-100 sm:pb-0 sm:border-0">
+          <div className="flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-900 text-white shadow-sm">
+              <span className="font-mono text-sm font-bold">N</span>
+            </div>
+            <span className="text-sm font-bold tracking-tight text-slate-800">Nomad Hub</span>
           </div>
-          <h2 className="text-5xl font-black tracking-tight leading-tight mb-6">
-            Start your <br/>journey today.
-          </h2>
-          <p className="text-lg text-slate-300 max-w-md leading-relaxed font-medium">
-            Create an elite storefront in seconds. Manage menus with AI and completely eliminate chaotic queues.
-          </p>
-        </div>
-      </div>
-
-      {/* Left Panel - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 xl:p-24 bg-white relative">
-        {/* Mobile Logo */}
-        <div className="absolute top-8 left-8 lg:hidden flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center shadow-md">
-            <span className="font-bold text-white text-xl">N</span>
-          </div>
-          <span className="font-bold text-xl tracking-tight text-slate-900">NomadHub</span>
+          <Link href="/login" className="text-xs font-semibold text-blue-900 hover:underline sm:hidden">
+            Sign In
+          </Link>
         </div>
 
-        <div className="w-full max-w-md mx-auto space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Create an account</h1>
-            <p className="text-slate-500 font-medium">Enter your details below to set up your store.</p>
+        <div className="my-auto mx-auto w-full max-w-[420px] pt-8 sm:pt-0" id="signup-inner-card">
+          <div className="mb-8" id="signup-header">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-semibold text-amber-800 mb-3 border border-amber-100 shadow-sm">
+              <Sparkles className="h-3 w-3" />
+              <span>Launch your Luxury Brand</span>
+            </div>
+            <h1 className="font-sans text-3xl font-bold tracking-tight text-slate-900 leading-tight">
+              Create your <br />
+              <span className="font-serif italic font-normal text-blue-900">Boutique Storefront</span>
+            </h1>
+            <p className="mt-2 text-[14px] text-slate-500 tracking-wide">
+              Enter your details below to establish your secure node.
+            </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="mb-6" id="google-sso-signup-container">
             <button
-              onClick={handleGoogleLogin}
-              disabled={isGoogleLoading || isLoading}
-              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-bold h-14 rounded-2xl transition-all shadow-sm active:scale-[0.98]"
+              onClick={handleGoogleSignup}
+              disabled={loading || isGoogleLoading}
+              type="button"
+              className="flex w-full items-center justify-center gap-3 rounded-full py-3.5 px-6 text-[14px] font-medium text-slate-700 transition-all active:scale-[0.98] cursor-pointer bg-gradient-to-br from-white to-slate-100 border-[1.5px] border-slate-200 shadow-sm hover:from-slate-50 hover:to-slate-200 hover:border-slate-300 disabled:opacity-50"
             >
               {isGoogleLoading ? (
-                <div className="w-5 h-5 border-2 border-slate-400 border-t-slate-700 rounded-full animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin text-slate-500" />
               ) : (
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  <path d="M1 1h22v22H1z" fill="none"/>
+                <svg viewBox="0 0 24 24" className="h-5 w-5">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.1-.13-.19-.27-.27-.41-.12-.13-.23-.26-.28-.38z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
                 </svg>
               )}
-              Sign up with Google
+              <span>Sign up with Google</span>
             </button>
+          </div>
 
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink-0 mx-4 text-xs font-bold uppercase tracking-widest text-slate-400">or continue with email</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+          <div className="mb-6 flex items-center justify-between">
+            <span className="h-[1px] w-full bg-slate-200" />
+            <span className="mx-4 shrink-0 text-[10px] font-semibold tracking-wider text-slate-400">
+              OR REGISTER WITH EMAIL
+            </span>
+            <span className="h-[1px] w-full bg-slate-200" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {errorMessage && (
+              <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-100 font-medium">
+                {errorMessage}
+              </div>
+            )}
+
+            <div className="flex flex-col space-y-1.5">
+              <label htmlFor="storeName" className="text-xs font-semibold tracking-wide text-slate-600">
+                Store / Café Boutique Name
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                  <Store className="h-4 w-4 text-slate-400" />
+                </div>
+                <input
+                  id="storeName"
+                  name="storeName"
+                  type="text"
+                  value={storeName}
+                  onChange={(e) => setStoreName(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3.5 pr-4 pl-10 text-[14px] text-slate-800 placeholder-slate-400 transition-all outline-none focus:border-blue-900 focus:bg-white focus:ring-1 focus:ring-blue-900/10"
+                  placeholder="e.g. Nomad Hub Flagship"
+                  required
+                />
+              </div>
+              {storeName && (
+                <p className="text-[11px] text-slate-500 font-medium ml-1 mt-1 animate-in fade-in slide-in-from-top-1">
+                  Your public link: <span className="text-blue-600 font-bold">nomadhub.app/{storeName.toLowerCase().trim().replace(/[\s_]+/g, '-').replace(/[^a-z0-9-]/g, '')}</span>
+                </p>
+              )}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl font-medium animate-in fade-in slide-in-from-top-2">
-                  <span className="font-bold">Error:</span> {error}
+            <div className="flex flex-col space-y-1.5">
+              <label htmlFor="email" className="text-xs font-semibold tracking-wide text-slate-600">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                  <Mail className="h-4 w-4 text-slate-400" />
                 </div>
-              )}
-
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-bold text-slate-700 ml-1">
-                  Email Address
-                </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3.5 pr-4 pl-10 text-[14px] text-slate-800 placeholder-slate-400 transition-all outline-none focus:border-blue-900 focus:bg-white focus:ring-1 focus:ring-blue-900/10"
+                  placeholder="name@establishment.com"
                   required
-                  placeholder="owner@nomadhub.app"
-                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 font-medium placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none transition-all"
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-bold text-slate-700 ml-1">
-                  Password
-                </label>
+            <div className="flex flex-col space-y-1.5">
+              <label htmlFor="password" className="text-xs font-semibold tracking-wide text-slate-600">
+                Password (min. 6 characters)
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </div>
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3.5 pr-10 pl-10 text-[14px] text-slate-800 placeholder-slate-400 transition-all outline-none focus:border-blue-900 focus:bg-white focus:ring-1 focus:ring-blue-900/10"
+                  placeholder="••••••••"
                   required
                   minLength={6}
-                  placeholder="••••••••"
-                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 font-medium placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
+            </div>
 
-              <Button
+            <div className="pt-3">
+              <button
                 type="submit"
-                disabled={isLoading || isGoogleLoading}
-                size="lg"
-                fullWidth
-                className="bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-200 mt-2 rounded-2xl h-14 font-black transition-all active:scale-[0.98]"
+                disabled={loading || isGoogleLoading}
+                className="flex w-full items-center justify-center rounded-full py-4 px-6 text-[15px] font-semibold text-white transition-all active:scale-[0.98] shadow-md cursor-pointer relative overflow-hidden bg-gradient-to-b from-blue-700 via-blue-800 to-blue-950 shadow-[0_4px_12px_rgba(30,58,138,0.3)] shadow-inner hover:from-blue-600 hover:via-blue-700 hover:to-blue-900 border border-blue-600 disabled:opacity-70"
               >
-                {isLoading ? (
-                  <span className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating account...
-                  </span>
+                {loading ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <span className="tracking-wide">Deploying Node...</span>
+                  </div>
                 ) : (
-                  'Create Account'
+                  <div className="flex items-center space-x-1 justify-center w-full">
+                    <span>Create Elite Account</span>
+                    <ArrowRight className="h-4 w-4 ml-1 opacity-80" />
+                  </div>
                 )}
-              </Button>
-            </form>
-          </div>
+              </button>
+            </div>
+          </form>
+        </div>
 
-          <p className="text-center text-sm font-medium text-slate-500 pt-6">
+        <div className="mt-8 text-center text-xs text-slate-500">
+          <p>
             Already have an account?{' '}
-            <Link href="/login" className="font-bold text-sky-500 hover:text-sky-600 transition-colors">
-              Sign in
+            <Link href="/login" className="font-bold text-blue-900 hover:underline cursor-pointer">
+              Sign In to Store
             </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* RIGHT SIDE: Reversed Luxury Imagery */}
+      <div className="relative hidden w-1/2 overflow-hidden bg-zinc-950 md:flex lg:w-[55%]">
+        <img
+          src={bakeryBg}
+          alt="Nomad Hub Luxury Boutique Bakery Symmetrical"
+          className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-10000 hover:scale-105 scale-x-[-1]"
+          referrerPolicy="no-referrer"
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-tl from-slate-900/40 via-transparent to-amber-500/10 mix-blend-multiply" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-zinc-950/80 to-transparent" />
+
+        <svg className="absolute inset-0 h-full w-full opacity-60">
+          <defs>
+            <radialGradient id="mesh-glow-signup" cx="80%" cy="80%" r="50%">
+              <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#mesh-glow-signup)" />
+          
+          <g stroke="rgba(255,255,255,0.12)" strokeWidth="1">
+            <line x1="90%" y1="20%" x2="75%" y2="35%" />
+            <line x1="75%" y1="35%" x2="80%" y2="60%" />
+            <line x1="80%" y1="60%" x2="60%" y2="50%" />
+            <line x1="60%" y1="50%" x2="65%" y2="25%" />
+            <line x1="65%" y1="25%" x2="90%" y2="20%" />
+            <line x1="60%" y1="50%" x2="40%" y2="65%" />
+          </g>
+
+          <g fill="rgba(255,255,255,0.6)">
+            <circle cx="90%" cy="20%" r="1.5" />
+            <circle cx="75%" cy="35%" r="2" />
+            <circle cx="80%" cy="60%" r="1.5" />
+            <circle cx="60%" cy="50%" r="2" />
+            <circle cx="65%" cy="25%" r="1.5" />
+            <circle cx="40%" cy="65%" r="2" />
+          </g>
+          
+          <text x="50%" y="95%" className="font-mono text-[10px] tracking-wider fill-white/40 text-right">NODE: SECURE_SIGNUP_SYSTEM_02B</text>
+        </svg>
+
+        <div className="absolute top-[8%] right-[8%] flex items-center space-x-3 text-white">
+          <div className="text-right">
+            <h4 className="text-sm font-medium tracking-wide">Nomad Hub Flagship</h4>
+            <p className="text-[11px] text-white/50">Paris • Jakarta • Tokyo</p>
+          </div>
+          <div className="rounded-full bg-white/10 p-2.5 backdrop-blur-md">
+            <Building className="h-5 w-5 text-amber-100" />
+          </div>
+        </div>
+
+        <div className="absolute right-[8%] bottom-[10%] left-[8%] rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-md">
+          <div className="flex items-center space-x-3 text-amber-150 mb-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm overflow-hidden p-1 bg-gradient-to-b from-white to-slate-100">
+              <span className="font-mono text-xs font-black tracking-tighter text-blue-900 leading-none">N</span>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white uppercase tracking-wider">NomadHub Architecture</p>
+              <p className="text-[10px] text-amber-200/60">Instant digital deployment with zero waiting arrays.</p>
+            </div>
+          </div>
+          <p className="font-serif text-lg italic leading-relaxed text-amber-50/90 pr-4">
+            "We provide creative gastronomic elites with instantaneous tools to curate boutique customer journeys, manage elite menus, and track multi-channel pastry volume seamlessly."
           </p>
         </div>
       </div>

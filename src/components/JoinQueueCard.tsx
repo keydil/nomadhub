@@ -93,7 +93,7 @@ export function JoinQueueCard({ vendorId, activeQueueCount }: JoinQueueCardProps
 
     setIsJoining(true);
     try {
-      const result = await joinQueue(vendorId, customerName);
+      const result = await joinQueue(vendorId, customerName, [], 0);
       if (result) {
         setJoinedQueue(result);
         toast.success('Berhasil bergabung dalam antrean! 🎉');

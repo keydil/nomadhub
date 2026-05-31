@@ -2,178 +2,304 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2, Sparkles, Building } from 'lucide-react';
 import { login, signInWithGoogle } from '@/app/auth-actions';
-import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
+const bakeryBg = '/luxurious_bakery_marble_counter_1779843206730.png';
+
 export default function LoginPage() {
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [showNotification, setShowNotification] = useState(false);
 
-  async function handleGoogleLogin() {
-    setIsGoogleLoading(true);
-    setError(null);
-    try {
-      await signInWithGoogle();
-    } catch (err: any) {
-      setError(err.message || 'Failed to authenticate with Google');
-      setIsGoogleLoading(false);
+    async function handleGoogleLogin() {
+        setIsGoogleLoading(true);
+        setError(null);
+        try {
+            await signInWithGoogle();
+        } catch (err: any) {
+            setError(err.message || 'Failed to authenticate with Google');
+            setIsGoogleLoading(false);
+        }
     }
-  }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(null);
 
-    const formData = new FormData(event.currentTarget);
-    const result = await login(formData);
+        const formData = new FormData(event.currentTarget);
+        const result = await login(formData);
 
-    if (result?.error) {
-      setError(result.error);
-      setIsLoading(false);
-      toast.error('Login failed', { description: result.error });
-    } else {
-      toast.success('Welcome back to NomadHub! 👋');
+        if (result?.error) {
+            setError(result.error);
+            setIsLoading(false);
+            toast.error('Login failed', { description: result.error });
+        } else {
+            toast.success('Welcome back to NomadHub! 👋');
+        }
     }
-  }
 
-  return (
-    <div className="flex min-h-screen bg-white">
-      {/* Left Panel - Branding & Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
-        <Image 
-          src="/auth-bg.png" 
-          alt="NomadHub Luxury Aesthetic" 
-          fill
-          priority
-          className="object-cover opacity-60 mix-blend-overlay"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
-        <div className="relative z-10 flex flex-col justify-end p-16 h-full text-white">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center shadow-xl shadow-sky-500/20 mb-8">
-            <span className="font-black text-3xl">N</span>
-          </div>
-          <h2 className="text-5xl font-black tracking-tight leading-tight mb-6">
-            Manage your <br/>mobile empire.
-          </h2>
-          <p className="text-lg text-slate-300 max-w-md leading-relaxed font-medium">
-            Join the elite network of mobile F&B businesses. Streamline orders, manage queues, and grow your revenue seamlessly.
-          </p>
-        </div>
-      </div>
+    return (
+        <div className="flex min-h-screen w-full bg-white text-slate-800" id="login-container">
+            {/* LEFT SIDE: Luxury Bakery Background & Tech Overlay Mesh */}
+            <div className="relative hidden w-1/2 overflow-hidden bg-zinc-950 md:flex lg:w-[55%]">
+                <img
+                    src={bakeryBg}
+                    alt="Nomad Hub Luxury Boutique Bakery"
+                    className="absolute inset-0 h-full w-full object-cover opacity-90 transition-transform duration-10000 hover:scale-105"
+                    referrerPolicy="no-referrer"
+                    id="bakery-bg-img"
+                />
 
-      {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 xl:p-24 bg-white relative">
-        {/* Mobile Logo */}
-        <div className="absolute top-8 left-8 lg:hidden flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-sky-600 flex items-center justify-center shadow-md">
-            <span className="font-bold text-white text-xl">N</span>
-          </div>
-          <span className="font-bold text-xl tracking-tight text-slate-900">NomadHub</span>
-        </div>
+                {/* Modern Blue & Amber Gradient overlays to match branding */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/40 via-transparent to-amber-500/10 mix-blend-multiply" />
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-zinc-950/80 to-transparent" />
 
-        <div className="w-full max-w-md mx-auto space-y-8">
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Welcome back</h1>
-            <p className="text-slate-500 font-medium">Enter your credentials to access your dashboard.</p>
-          </div>
+                {/* Constellation Golden & Cyber Mesh Overlays */}
+                <svg className="absolute inset-0 h-full w-full opacity-65" id="cyber-mesh-vector">
+                    <defs>
+                        <radialGradient id="mesh-glow" cx="20%" cy="80%" r="50%">
+                            <stop offset="0%" stopColor="#1e40af" stopOpacity="0.15" />
+                            <stop offset="100%" stopColor="#1e40af" stopOpacity="0" />
+                        </radialGradient>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#mesh-glow)" />
 
-          <div className="space-y-6">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={isGoogleLoading || isLoading}
-              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 font-bold h-14 rounded-2xl transition-all shadow-sm active:scale-[0.98]"
-            >
-              {isGoogleLoading ? (
-                <div className="w-5 h-5 border-2 border-slate-400 border-t-slate-700 rounded-full animate-spin" />
-              ) : (
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  <path d="M1 1h22v22H1z" fill="none"/>
+                    {/* Futuristic subtle nodes matching the user's overlay dots */}
+                    <g stroke="rgba(255,255,255,0.12)" strokeWidth="1">
+                        <line x1="10%" y1="20%" x2="25%" y2="35%" />
+                        <line x1="25%" y1="35%" x2="20%" y2="60%" />
+                        <line x1="20%" y1="60%" x2="40%" y2="50%" />
+                        <line x1="40%" y1="50%" x2="35%" y2="25%" />
+                        <line x1="35%" y1="25%" x2="10%" y2="20%" />
+
+                        <line x1="40%" y1="50%" x2="60%" y2="65%" />
+                        <line x1="60%" y1="65%" x2="55%" y2="85%" />
+                        <line x1="55%" y1="85%" x2="35%" y2="78%" />
+                        <line x1="35%" y1="78%" x2="20%" y2="60%" />
+
+                        <line x1="55%" y1="85%" x2="80%" y2="90%" stroke="rgba(30,64,175,0.2)" strokeWidth="1.5" />
+                        <line x1="80%" y1="90%" x2="95%" y2="70%" stroke="rgba(30,64,175,0.2)" strokeWidth="1.5" />
+                    </g>
+
+                    <g fill="rgba(255,255,255,0.6)">
+                        <circle cx="10%" cy="20%" r="1.5" />
+                        <circle cx="25%" cy="35%" r="2" className="animate-pulse" />
+                        <circle cx="20%" cy="60%" r="1.5" />
+                        <circle cx="40%" cy="50%" r="2" />
+                        <circle cx="35%" cy="25%" r="1.5" />
+                        <circle cx="60%" cy="65%" r="2" />
+                        <circle cx="55%" cy="85%" r="2.5" className="animate-ping" style={{ animationDuration: '3s' }} />
+                        <circle cx="35%" cy="78%" r="1.5" />
+                        <circle cx="80%" cy="90%" r="2" />
+                    </g>
                 </svg>
-              )}
-              Continue with Google
-            </button>
 
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink-0 mx-4 text-xs font-bold uppercase tracking-widest text-slate-400">or continue with email</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+                {/* Ambient branding indicator */}
+                <div className="absolute top-[8%] left-[8%] flex items-center space-x-3 text-white">
+                    <div className="rounded-full bg-white/10 p-2.5 backdrop-blur-md">
+                        <Building className="h-5 w-5 text-amber-100" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-medium tracking-wide">Nomad Hub Flagship</h4>
+                        <p className="text-[11px] text-white/50">Paris • Jakarta • Tokyo</p>
+                    </div>
+                </div>
+
+                <div className="absolute right-[8%] bottom-[10%] left-[8%] rounded-xl border border-white/10 bg-black/20 p-6 backdrop-blur-md">
+                    <p className="font-serif text-lg italic leading-relaxed text-amber-50/90">
+                        "We wanted to build something that was visually striking, extremely minimalist, and operated like structured elite clockwork."
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-semibold text-white">Nomad Hub Elite Group</p>
+                            <p className="text-[10px] text-amber-200/60">Creative Gastronomy & Boutique Cafés</p>
+                        </div>
+                        <div className="text-[11px] font-mono text-white/40">EST. 2024</div>
+                    </div>
+                </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl font-medium animate-in fade-in slide-in-from-top-2">
-                  <span className="font-bold">Error:</span> {error}
+            {/* RIGHT SIDE: Interactive Login Interface */}
+            <div className="flex w-full flex-col justify-between px-6 py-12 md:w-1/2 md:px-12 lg:w-[45%] lg:px-20" id="login-form-side">
+                <div className="hidden h-8 sm:block" />
+
+                <div className="my-auto mx-auto w-full max-w-[420px]" id="login-inner-card">
+                    <div className="mb-8 flex justify-center" id="logo-wrapper">
+                        {/* Replaced custom .glow-ring with pure Tailwind */}
+                        <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-slate-200 bg-white shadow-[0_0_15px_rgba(30,64,175,0.08),0_0_30px_rgba(30,64,175,0.04)] ring-1 ring-white/80">
+                            <div className="absolute inset-0.5 rounded-full border border-slate-100/50 bg-gradient-to-b from-slate-50 to-slate-100/20" />
+                            <svg viewBox="0 0 100 100" className="relative h-10 w-10 text-blue-900" id="brand-n-logo">
+                                <path
+                                    d="M25 75 L25 25 L45 25 L75 75 L75 25"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="11"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                <circle cx="21" cy="25" r="5.5" fill="currentColor" />
+                                <circle cx="79" cy="75" r="5.5" fill="currentColor" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div className="mb-6 text-center" id="welcome-header">
+                        <h1 className="font-sans text-3xl font-semibold tracking-tight text-slate-800">
+                            Welcome back <span className="font-serif italic font-medium text-slate-900">Elite</span>
+                        </h1>
+                        <p className="mt-2 text-[14px] text-slate-500 tracking-wide">
+                            Enter your credentials to access your dashboard.
+                        </p>
+                    </div>
+
+                    <div className="mb-6" id="google-sso-container">
+                        <button
+                            onClick={handleGoogleLogin}
+                            disabled={isGoogleLoading || isLoading}
+                            type="button"
+                            /* Replaced .metallic-btn with pure Tailwind */
+                            className="flex w-full items-center justify-center gap-3 rounded-full py-3.5 px-6 text-[14px] font-medium text-slate-700 transition-all active:scale-[0.98] cursor-pointer bg-gradient-to-br from-white to-slate-100 border-[1.5px] border-slate-200 shadow-sm hover:from-slate-50 hover:to-slate-200 hover:border-slate-300 disabled:opacity-50"
+                            id="google-login-btn"
+                        >
+                            {isGoogleLoading ? (
+                                <Loader2 className="h-5 w-5 animate-spin text-slate-500" />
+                            ) : (
+                                <svg viewBox="0 0 24 24" className="h-5 w-5" id="google-icon-svg">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.1-.13-.19-.27-.27-.41-.12-.13-.23-.26-.28-.38z" fill="#FBBC05" />
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+                                </svg>
+                            )}
+                            <span>Continue with Google</span>
+                        </button>
+                    </div>
+
+                    <div className="mb-6 flex items-center justify-between" id="divider-container">
+                        <span className="h-[1px] w-full bg-slate-200" />
+                        <span className="mx-4 shrink-0 text-[10px] font-semibold tracking-wider text-slate-400">
+                            OR CONTINUE WITH EMAIL
+                        </span>
+                        <span className="h-[1px] w-full bg-slate-200" />
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4" id="credentials-form">
+                        {error && (
+                            <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 border border-red-100" id="login-error-toast">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="flex flex-col space-y-1.5" id="field-email">
+                            <label htmlFor="email-input" className="text-xs font-semibold tracking-wide text-slate-600">
+                                Email Address
+                            </label>
+                            <div className="relative">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                                    <Mail className="h-4 w-4 text-slate-400" />
+                                </div>
+                                <input
+                                    id="email-input"
+                                    name="email"
+                                    type="email"
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3.5 pr-4 pl-10 text-[14px] text-slate-800 placeholder-slate-400 transition-all outline-none focus:border-blue-900 focus:bg-white focus:ring-1 focus:ring-blue-900/10"
+                                    placeholder="owner@nomadhub.app"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col space-y-1.5" id="field-password">
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="password-input" className="text-xs font-semibold tracking-wide text-slate-600">
+                                    Password
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowNotification(true)}
+                                    className="text-xs font-semibold text-blue-900/80 hover:text-blue-900 hover:underline cursor-pointer"
+                                    id="forgot-password-link"
+                                >
+                                    Forgot?
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                                    <Lock className="h-4 w-4 text-slate-400" />
+                                </div>
+                                <input
+                                    id="password-input"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="w-full rounded-lg border border-slate-200 bg-slate-50/50 py-3.5 pr-10 pl-10 text-[14px] text-slate-800 placeholder-slate-400 transition-all outline-none focus:border-blue-900 focus:bg-white focus:ring-1 focus:ring-blue-900/10"
+                                    placeholder="Password"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600"
+                                    id="password-visibility-toggle"
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="pt-2" id="submit-container">
+                            <button
+                                type="submit"
+                                disabled={isLoading || isGoogleLoading}
+                                /* Replaced .glossy-blue-btn with pure Tailwind */
+                                className="flex w-full items-center justify-center rounded-full py-4 px-6 text-[15px] font-semibold text-white transition-all active:scale-[0.98] cursor-pointer relative overflow-hidden bg-gradient-to-b from-blue-700 via-blue-800 to-blue-950 shadow-[0_4px_12px_rgba(30,58,138,0.3)] shadow-inner hover:from-blue-600 hover:via-blue-700 hover:to-blue-900 border border-blue-600 disabled:opacity-70"
+                                id="sign-in-btn"
+                            >
+                                {isLoading ? (
+                                    <div className="flex items-center space-x-2">
+                                        <Loader2 className="h-4 w-4 animate-spin text-white" />
+                                        <span className="tracking-wide">Verifying...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center space-x-1 justify-center w-full">
+                                        <span>Sign In</span>
+                                        <ArrowRight className="h-4 w-4 ml-1 opacity-80" />
+                                    </div>
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-bold text-slate-700 ml-1">
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="owner@nomadhub.app"
-                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 font-medium placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
-                  <label htmlFor="password" className="text-sm font-bold text-slate-700">
-                    Password
-                  </label>
-                  <Link href="#" className="text-xs font-bold text-sky-500 hover:text-sky-600 transition-colors">
-                    Forgot?
-                  </Link>
+                <div className="mt-8 text-center text-xs text-slate-500" id="footer-login">
+                    <p>
+                        Don't have an account yet?{' '}
+                        <Link
+                            href="/signup"
+                            className="font-semibold text-blue-900 hover:underline cursor-pointer"
+                            id="create-store-link"
+                        >
+                            Create a store
+                        </Link>
+                    </p>
                 </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-900 font-medium placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-none transition-all"
-                />
-              </div>
 
-              <Button
-                type="submit"
-                disabled={isLoading || isGoogleLoading}
-                size="lg"
-                fullWidth
-                className="bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-200 mt-2 rounded-2xl h-14 font-black transition-all active:scale-[0.98]"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
-                  </span>
-                ) : (
-                  'Sign In'
+                {showNotification && (
+                    <div className="fixed right-6 bottom-6 z-50 rounded-xl bg-slate-900 text-white shadow-xl p-4 flex items-center space-x-3 text-xs w-72 animate-bounce">
+                        <Sparkles className="h-4 w-4 text-yellow-400 shrink-0" />
+                        <div>
+                            <p className="font-semibold text-slate-200">System Notification</p>
+                            <p className="text-slate-400">Password reset is currently under maintenance.</p>
+                        </div>
+                        <button onClick={() => setShowNotification(false)} className="text-white hover:text-slate-300 font-bold px-1 pl-2">×</button>
+                    </div>
                 )}
-              </Button>
-            </form>
-          </div>
-
-          <p className="text-center text-sm font-medium text-slate-500 pt-6">
-            Don't have an account yet?{' '}
-            <Link href="/signup" className="font-bold text-sky-500 hover:text-sky-600 transition-colors">
-              Create a store
-            </Link>
-          </p>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

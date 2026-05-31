@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { StorefrontLayout } from './StorefrontLayout';
-import { HeroProduct } from './HeroProduct';
-import { AIRecommendation } from './AIRecommendation';
-import { MenuCatalog } from './MenuCatalog';
-import { CompactHeaderVendor } from './CompactHeaderVendor';
-import { BottomNav } from './BottomNav';
-import { CartDrawer } from './CartDrawer';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { createClient } from '@/utils/supabase/client';
 import { useMagicPolish } from '@/hooks/useMagicPolish';
+import PhoneContainer from './PhoneContainer';
+import HomeTab from './HomeTab';
+import CartTab from './CartTab';
+import OrdersTab from './OrdersTab';
+
+import { useCartStore } from '@/store/useCartStore';
+import { useQueueStore } from '@/store/useQueueStore';
+import { joinQueue } from '@/app/actions';
+import { toast } from 'sonner';
 
 interface StorefrontClientProps {
   vendor: any;
@@ -17,98 +20,198 @@ interface StorefrontClientProps {
 }
 
 export default function StorefrontClient({ vendor, menuItems }: StorefrontClientProps) {
-  const [showFullMenu, setShowFullMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'cart' | 'queue'>('home');
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'home' | 'cart' | 'orders'>('home');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
-  // Pick the first item as the "Signature Dish" for the Hero
+  // Coupon state for the CartTab
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number } | null>(null);
+  const [tableNumber, setTableNumber] = useState('');
+  const [customerName, setCustomerName] = useState('');
+
   const signatureDish = menuItems[0] || {
     title: 'Welcome to our Kitchen',
     description: 'Discover the best flavors in town.',
     imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=2000'
   };
 
-  // Magic Polish Hook (AI Recommendation)
   const { data: polishedData, isLoading: isPolishing } = useMagicPolish(signatureDish);
+  const queueState = useQueueStore();
+  // Only show orders that belong to THIS vendor (multi-tenant isolation)
+  const orders = (queueState.activeQueueId && queueState.vendorId === vendor.id) ? [{
+    id: `${queueState.customerName} #${queueState.queueNumber}`,
+    originalId: queueState.activeQueueId,
+    items: queueState.items || [],
+    status: queueState.status === 'waiting' ? 'Menerima' : queueState.status === 'cooking' ? 'Disiapkan' : queueState.status === 'completed' ? 'Selesai' : 'Menerima' as import("../../types").OrderStatus,
+    createdAt: new Date().toISOString(),
+    timeLeft: 600,
+    subtotal: queueState.totalPrice || 0,
+    deliveryFee: 0,
+    total: queueState.totalPrice || 0,
+    deliveryMethod: queueState.deliveryMethod || 'Pickup',
+    paymentMethod: queueState.paymentMethod || 'Cash',
+    paymentStatus: queueState.paymentStatus || 'Pending',
+    tableNumber: queueState.tableNumber || ''
+  } as import("../../types").OrderState] : [];
 
-  // Logic for AI recommendation (just pick the second item or signature for now)
-  const recommendedItem = menuItems[1] || menuItems[0];
+  const activeQueueId = useQueueStore((state) => state.activeQueueId);
+  
 
-  // Lock scroll when Hero is active
+  // Cart State
+  const items = useCartStore((state) => state.items);
+  const addToCart = useCartStore((state) => state.addToCart);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const updateNotes = useCartStore((state) => state.updateNotes);
+  const clearCart = useCartStore((state) => state.clearCart);
+
+  // Audio Reference for order completion
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
-    if (!showFullMenu) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.height = '100dvh';
-    } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.height = 'auto';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.height = 'auto';
-    };
-  }, [showFullMenu]);
+    audioRef.current = new Audio('/success.mp3');
+  }, []);
 
-  const handleTabChange = (tab: 'home' | 'cart' | 'queue') => {
-    if (tab === 'cart') {
-      setIsCartOpen(true);
-      return;
+  // Realtime subscription to track buyer order status
+  useEffect(() => {
+    if (!queueState.activeQueueId) return;
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`buyer-queue-${queueState.activeQueueId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'queues',
+          filter: `id=eq.${queueState.activeQueueId}`,
+        },
+        (payload) => {
+          const updated = payload.new as any;
+          if (updated.status !== queueState.status) {
+            queueState.updateStatus(updated.status);
+            
+            // Play success sound if order completed
+            if ((updated.status === 'completed' || updated.status === 'ready') && audioRef.current) {
+               audioRef.current.currentTime = 0;
+               audioRef.current.play().catch(() => {});
+               toast.success('Yeay! Pesananmu sudah selesai! 🎉', { duration: 5000 });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queueState.activeQueueId, queueState.status]);
+
+  // Enforce single-vendor cart policy
+  useEffect(() => {
+    if (items.length > 0 && items[0].vendorId !== vendor.id) {
+      clearCart();
     }
-    setActiveTab(tab);
+  }, [vendor.id, items]);
+
+  const handleCheckout = async (
+    subtotal: number, 
+    deliveryFee: number, 
+    discount: number, 
+    couponCode: string, 
+    deliveryMethod: 'Pickup' | 'Delivery', 
+    customerName: string, 
+    paymentMethod: string = 'Cash',
+    paymentStatus: string = 'Pending',
+    paymentProof?: string,
+    tableNumberFromCart?: string
+  ) => {
+    const calculatedTotal = Math.max(0, subtotal + deliveryFee - discount);
+    
+    // Call real Supabase action
+    try {
+      const result = await joinQueue(vendor.id, customerName, items, calculatedTotal, deliveryMethod, paymentMethod, tableNumberFromCart || tableNumber, paymentStatus, paymentProof);
+      if (result) {
+        // Save to useQueueStore so the OrdersTab can track it
+        useQueueStore.getState().setActiveQueue(result);
+        
+        toast.success('Order Confirmed!', {
+          description: `You are now in the queue. Your number is #${result.queue_number}`
+        });
+
+        clearCart();
+        setAppliedCoupon(null);
+        setActiveTab('orders');
+      } else {
+        toast.error('Failed to submit order');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong!');
+    }
+  };
+
+  const handleClearHistory = () => {};
+
+  const handleReorder = (itemsToCopy: any[]) => {
+    itemsToCopy.forEach(item => {
+      addToCart({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        vendorId: item.vendorId,
+        notes: item.notes
+      });
+    });
+    setActiveTab('cart');
   };
 
   return (
-    <StorefrontLayout>
-      <AnimatePresence mode="wait">
-        {!showFullMenu ? (
-          <HeroProduct 
-            key="hero"
-            name={signatureDish.title}
-            description={isPolishing ? "Crafting a masterpiece..." : (polishedData?.description || signatureDish.description)}
-            hashtags={polishedData?.hashtags}
-            imageUrl={signatureDish.imageUrl}
-            onExplore={() => setShowFullMenu(true)} 
-          />
-        ) : (
-          <motion.div 
-            key="content"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="pb-32"
-          >
-            <CompactHeaderVendor vendor={vendor} onClose={() => setShowFullMenu(false)} />
-            
-            <main className="space-y-12 py-8">
-              {activeTab === 'home' && (
-                <>
-                  <div className="px-6">
-                    <AIRecommendation 
-                      recommendedItem={recommendedItem} 
-                    />
-                  </div>
-                  <MenuCatalog items={menuItems.map(item => ({ ...item, vendorId: vendor.id }))} />
-                </>
-              )}
-              
-              {activeTab === 'queue' && (
-                <div className="px-6 py-20 text-center text-slate-400">
-                  <h2 className="text-2xl font-black text-slate-900 mb-2">My Queue</h2>
-                  <p>You have no active orders yet.</p>
-                </div>
-              )}
-            </main>
+    <PhoneContainer
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      cartCount={items.length}
+      onOpenStoreInfo={() => setSelectedCategory('All')}
+    >
+      {activeTab === 'home' && (
+        <HomeTab
+          vendor={vendor}
+          menuItems={menuItems}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          cart={items}
+          onAddToCart={addToCart}
+          onUpdateQuantity={updateQuantity}
+          onRemoveItem={removeFromCart}
+          onUpdateNotes={updateNotes}
+          onNavigateCart={() => setActiveTab('cart')}
+        />
+      )}
 
-            <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {activeTab === 'cart' && (
+        <CartTab
+          cart={items}
+          onUpdateQuantity={updateQuantity}
+          onRemoveItem={removeFromCart}
+          onCheckout={handleCheckout}
+          appliedCoupon={appliedCoupon}
+          setAppliedCoupon={setAppliedCoupon}
+          tableNumber={tableNumber}
+          setTableNumber={setTableNumber}
+          customerName={customerName}
+          setCustomerName={setCustomerName}
+        />
+      )}
 
-      <CartDrawer 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        vendorId={vendor.id}
-        onSuccess={() => setActiveTab('queue')}
-      />
-    </StorefrontLayout>
+      {activeTab === 'orders' && (
+        <OrdersTab
+          orders={orders}
+          onReorder={handleReorder}
+          onClearHistory={handleClearHistory}
+          onNavigateHome={() => setActiveTab('home')}
+        />
+      )}
+    </PhoneContainer>
   );
 }

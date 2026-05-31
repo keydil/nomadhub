@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 export const Header: React.FC = () => {
   const pathname = usePathname();
 
-  // Hide header on vendor storefront pages
-  const isStorefront = pathname !== '/' && !pathname?.startsWith('/dashboard') && !pathname?.startsWith('/login') && !pathname?.startsWith('/signup') && !pathname?.startsWith('/onboarding');
+  // Hide header on vendor storefront pages and dashboard
+  const isStorefront = pathname !== '/' && !pathname?.startsWith('/login') && !pathname?.startsWith('/signup') && !pathname?.startsWith('/onboarding');
   if (isStorefront) return null;
 
   return (
@@ -20,12 +20,16 @@ export const Header: React.FC = () => {
           </div>
           <span className="font-bold text-xl tracking-tight text-slate-800">NomadHub</span>
         </Link>
-        <nav className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
-            Dashboard
-          </Link>
-          <Link href="/mr-churraos" className="text-sm font-medium text-slate-600 hover:text-sky-600 transition-colors">
+        <nav className="flex items-center gap-5">
+          <Link href="/mr-churraos" className="text-sm font-semibold text-slate-600 hover:text-sky-600 transition-colors">
             Demo Store
+          </Link>
+          <div className="h-4 w-px bg-slate-300 hidden sm:block"></div>
+          <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-sky-600 transition-colors hidden sm:block">
+            Sign In
+          </Link>
+          <Link href="/signup" className="text-sm font-bold text-white bg-blue-900 hover:bg-blue-800 px-4 py-2 rounded-full transition-colors shadow-sm">
+            Create Store
           </Link>
         </nav>
       </div>

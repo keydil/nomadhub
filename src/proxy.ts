@@ -11,7 +11,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp3|wav)$).*)',
   ],
 };
 
@@ -26,7 +26,6 @@ export async function proxy(req: NextRequest) {
   if ((url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/onboarding')) && !user) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = '/login';
-    // Preserve redirect parameter to let them come back optionally, but simpler for now:
     return NextResponse.redirect(redirectUrl);
   }
   
@@ -49,9 +48,13 @@ export async function proxy(req: NextRequest) {
   if (currentHost.includes('.my.id')) {
     currentHost = currentHost.replace('.my.id', '');
   }
+  if (currentHost.includes('.biz.id')) {
+    currentHost = currentHost.replace('.biz.id', '');
+  }
 
   const isMainDomain = [
     'nomadhub.app',
+    'nomadhub.biz.id',
     'localhost:3000',
     '10.193.1.200:3000',
     '10.193.1.200',
@@ -67,7 +70,7 @@ export async function proxy(req: NextRequest) {
 
   // If it's main domain, allow navigation naturally (along with auth updates).
   // Also ensure we do NOT rewrite dynamic paths inside main dashboards (like /dashboard or /login)
-  if (isMainDomain || url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/onboarding') || url.pathname.startsWith('/login')) {
+  if (isMainDomain || url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/onboarding') || url.pathname.startsWith('/login') || url.pathname.startsWith('/signup')) {
     return supabaseResponse;
   }
 

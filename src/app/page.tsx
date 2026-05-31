@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { fetchAllActiveVendors } from '@/app/actions';
+import { EcosystemMapDynamic } from '@/components/landing/EcosystemMapDynamic';
 
-export default function Home() {
+export default async function Home() {
+  const vendors = await fetchAllActiveVendors();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-gradient-to-b from-slate-50 to-slate-100 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full space-y-12 text-center">
@@ -19,14 +23,14 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/dashboard">
+          <Link href="/signup">
             <Button size="lg" className="w-full sm:w-auto text-lg px-8">
-              Open Vendor Dashboard
+              Create Your Free Store
             </Button>
           </Link>
           <Link href="/mr-churraos">
             <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 bg-white">
-              Try Smart Queue Demo
+              View Customer Experience
             </Button>
           </Link>
         </div>
@@ -62,6 +66,50 @@ export default function Home() {
             <p className="text-slate-600">Monitor your active queues, toggle your store status with a tap, and stay in total control during busy rushes.</p>
           </div>
         </div>
+
+        <section id="ecosystem" className="py-24 px-4 sm:px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-2xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden">
+              {/* Decorative backgrounds */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-sky-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-50 rounded-full blur-3xl opacity-50 translate-y-1/2 -translate-x-1/3" />
+              
+              <div className="relative z-10 flex flex-col lg:flex-row gap-12 items-center">
+                <div className="flex-1 text-left space-y-6">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-50 border border-sky-100 text-sky-700 text-xs font-bold uppercase tracking-widest">
+                    <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
+                    Live Ecosystem
+                  </div>
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    Temukan Kuliner <br/>di Sekitarmu
+                  </h2>
+                  <p className="text-lg text-slate-600 leading-relaxed max-w-md">
+                    Jelajahi berbagai tenant F&B menarik yang menggunakan NomadHub. Dari kopi artisan hingga jajanan unik, semuanya ada dalam satu ekosistem.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+                    <div>
+                      <div className="text-3xl font-black text-sky-500">{vendors.length}</div>
+                      <div className="text-sm font-semibold text-slate-500 mt-1">Active Tenants</div>
+                    </div>
+                    <div>
+                      <div className="text-3xl font-black text-emerald-500">
+                        {vendors.filter(v => !v.is_manually_closed).length}
+                      </div>
+                      <div className="text-sm font-semibold text-slate-500 mt-1">Open Now</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex-1 w-full lg:max-w-xl">
+                  <div className="relative p-2 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                    <EcosystemMapDynamic vendors={vendors} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

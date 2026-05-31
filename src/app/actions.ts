@@ -83,13 +83,75 @@ export async function setVendorLocation(location: string) {
   const vendorId = await getDefaultVendorId();
   if (!vendorId) return;
 
-  await supabase
+  const sb = await createServerSupabase();
+  await sb
     .from('vendors')
     .update({ location })
     .eq('id', vendorId);
 
   revalidatePath('/dashboard');
   revalidatePath(`/${vendorId}`);
+}
+
+export async function updateVendorProfile(name: string, description: string, location: string, logoUrl?: string, latitude?: number, longitude?: number, is_active?: boolean) {
+  const vendorId = await getDefaultVendorId();
+  if (!vendorId) return { error: 'Not authenticated' };
+
+  const sb = await createServerSupabase();
+  
+  const updateData: any = { name, description, location };
+  if (logoUrl !== undefined) {
+    updateData.logo_url = logoUrl;
+  }
+  if (latitude !== undefined) updateData.latitude = latitude;
+  if (longitude !== undefined) updateData.longitude = longitude;
+  if (is_active !== undefined) updateData.is_active = is_active;
+
+  const { error } = await sb
+    .from('vendors')
+    .update(updateData)
+    .eq('id', vendorId);
+
+  if (error) {
+    console.error('Error updating vendor profile:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/settings');
+  revalidatePath(`/${vendorId}`);
+  return { success: true };
+}
+
+export async function uploadVendorLogo(formData: FormData) {
+  const file = formData.get('file') as File;
+  if (!file) throw new Error('No file chosen');
+
+  const sb = await createServerSupabase();
+  
+  const fileExt = file.name.includes('.') ? file.name.split('.').pop() : 'jpg';
+  const uuid = crypto.randomUUID();
+  const filePath = `logos/${uuid}.${fileExt}`; // Storing in logos/ folder
+
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const { data, error } = await sb.storage
+    .from('menu-images') // Reusing the same public bucket
+    .upload(filePath, buffer, {
+      contentType: file.type || 'image/jpeg',
+      upsert: false
+    });
+
+  if (error) {
+    console.error('[Supabase Upload CRASH REPORT]:', JSON.stringify(error, null, 2));
+    throw new Error(`Supabase Storage Error: [${error.name}] - ${error.message}`);
+  }
+
+  const { data: { publicUrl } } = sb.storage
+    .from('menu-images')
+    .getPublicUrl(filePath);
+
+  return publicUrl;
 }
 
 export async function fetchMenu() {
@@ -114,7 +176,7 @@ export async function fetchMenu() {
   }));
 }
 
-export async function saveMenuItem(title: string, description: string, price: string, imageUrl?: string) {
+export async function saveMenuItem(title: string, description: string, price: string, imageUrl?: string, category: string = 'Lainnya') {
   const vendorId = await getDefaultVendorId();
   if (!vendorId) return;
 
@@ -127,7 +189,8 @@ export async function saveMenuItem(title: string, description: string, price: st
       title,
       description,
       price,
-      image_url: imageUrl // Mapping our parameter to db snake_case column
+      image_url: imageUrl,
+      category
     }]);
 
   if (error) {
@@ -178,6 +241,45 @@ export async function uploadMenuImage(formData: FormData) {
 
 // Data fetching methods for the public storefront
 
+
+export async function deleteMenuItem(id: string) {
+  const sb = await createServerSupabase();
+  const { error } = await sb
+    .from('menus')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting menu item:', error);
+    throw error;
+  }
+}
+
+export async function editMenuItem(id: string, title: string, description: string, price: number, category: string, imageUrl?: string) {
+  const sb = await createServerSupabase();
+  
+  const updateData: any = {
+    title,
+    description,
+    price,
+    category
+  };
+  
+  if (imageUrl !== undefined) {
+    updateData.image_url = imageUrl;
+  }
+
+  const { error } = await sb
+    .from('menus')
+    .update(updateData)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating menu item:', error);
+    throw error;
+  }
+}
+
 export async function getVendorBySlug(slug: string) {
   const { data, error } = await supabase
     .from('vendors')
@@ -201,6 +303,37 @@ export async function getVendorBySlug(slug: string) {
   };
 }
 
+export async function fetchAllActiveVendors() {
+  const sb = await createServerSupabase();
+  const { data, error } = await sb
+    .from('vendors')
+    .select(`
+      id, name, description, location,
+      latitude, longitude,
+      is_active, is_manually_closed,
+      opening_time, closing_time,
+      logo_url, is_email_verified
+    `)
+    .eq('is_active', true)
+    .eq('is_email_verified', true)
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching active vendors:', error);
+    return [];
+  }
+  
+  // Parse dynamic status for each vendor
+  return data.map(vendor => {
+    const isOpen = checkVendorStatus({
+      is_manually_closed: vendor.is_manually_closed,
+      opening_time: vendor.opening_time,
+      closing_time: vendor.closing_time
+    });
+    return { ...vendor, status: isOpen ? 'open' : 'closed' };
+  });
+}
+
 export async function getMenuItemsByVendorId(vendorId: string) {
   const { data, error } = await supabase
     .from('menus')
@@ -218,22 +351,43 @@ export async function getMenuItemsByVendorId(vendorId: string) {
 
 // --- Queue Management Actions ---
 
-export async function joinQueue(vendorId: string, customerName: string) {
-  // Get current max queue number
-  const { count, error: countError } = await supabase
+export async function joinQueue(
+  vendorId: string, 
+  customerName: string, 
+  items: any[], 
+  totalPrice: number, 
+  deliveryMethod: 'Delivery' | 'Pickup' = 'Pickup',
+  paymentMethod: string = 'Cash',
+  tableNumber: string = '',
+  paymentStatus: string = 'Pending',
+  paymentProof?: string
+) {
+  const supabase = await createServerSupabase();
+  
+  // Calculate the next queue number for this vendor today
+  const { count } = await supabase
     .from('queues')
     .select('*', { count: 'exact', head: true })
-    .eq('vendor_id', vendorId);
+    .eq('vendor_id', vendorId)
+    .gte('created_at', new Date().toISOString().split('T')[0]);
     
   const queueNumber = (count || 0) + 1;
+
+  const encodedCustomerName = `${customerName}|||${deliveryMethod}`;
 
   const { data, error } = await supabase
     .from('queues')
     .insert([{
       vendor_id: vendorId,
-      customer_name: customerName,
+      customer_name: encodedCustomerName,
       status: 'waiting',
-      queue_number: queueNumber
+      queue_number: queueNumber,
+      items_json: items,
+      total_price: totalPrice,
+      payment_method: paymentMethod,
+      payment_status: paymentStatus,
+      payment_proof: paymentProof,
+      table_number: tableNumber
     }])
     .select()
     .single();
@@ -256,7 +410,7 @@ export async function fetchActiveQueues() {
     .from('queues')
     .select('*')
     .eq('vendor_id', vendorId)
-    .eq('status', 'waiting')
+    .in('status', ['waiting', 'cooking'])
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -267,11 +421,12 @@ export async function fetchActiveQueues() {
   return data;
 }
 
-export async function updateQueueStatus(queueId: string, status: 'completed' | 'cancelled') {
+export async function updateQueueStatus(queueId: string, status: 'cooking' | 'completed' | 'cancelled') {
   const vendorId = await getDefaultVendorId();
   if (!vendorId) return;
 
-  const { error } = await supabase
+  const sb = await createServerSupabase();
+  const { error } = await sb
     .from('queues')
     .update({ status })
     .eq('id', queueId);

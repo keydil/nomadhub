@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, ShoppingBag, ArrowRight, User, CheckCircle2 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useQueueStore } from '@/store/useQueueStore';
 import { cn } from '@/utils/cn';
 import { joinQueue } from '@/app/actions';
 import { toast } from 'sonner';
@@ -32,8 +33,10 @@ export function CartDrawer({ isOpen, onClose, vendorId, onSuccess }: CartDrawerP
 
     setIsSubmitting(true);
     try {
-      const result = await joinQueue(vendorId, customerName);
+      const result = await joinQueue(vendorId, customerName, items, totalPrice);
       if (result) {
+        useQueueStore.getState().setActiveQueue(result);
+
         toast.success('Order Confirmed!', {
           description: `You are now in the queue. Your number is #${result.queue_number}`,
           icon: <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -73,8 +76,8 @@ export function CartDrawer({ isOpen, onClose, vendorId, onSuccess }: CartDrawerP
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={cn(
-              "fixed inset-x-0 bottom-0 z-[70] mx-auto w-full max-w-lg overflow-hidden rounded-t-[2.5rem] bg-white shadow-2xl transition-all duration-500 flex flex-col",
-              step === 'review' ? "h-[70vh]" : "h-[85vh]"
+              "fixed inset-x-0 bottom-0 z-[70] mx-auto w-full max-w-lg overflow-hidden rounded-t-[2.5rem] bg-white shadow-2xl transition-all duration-500 flex flex-col pb-[100px]",
+              step === 'review' ? "h-[75vh]" : "h-[85vh]"
             )}
           >
             {/* 1. Header (Fixed) */}

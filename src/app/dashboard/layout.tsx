@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
+import { VerificationBanner } from '@/components/VerificationBanner';
 
 export default async function DashboardLayout({
   children,
@@ -16,7 +17,7 @@ export default async function DashboardLayout({
   // Check if user has a store
   const { data: vendor, error } = await supabase
     .from('vendors')
-    .select('id')
+    .select('id, is_email_verified')
     .eq('owner_id', user.id)
     .single();
 
@@ -25,9 +26,16 @@ export default async function DashboardLayout({
     redirect('/onboarding');
   }
 
+  // Check verification status from both user metadata AND vendor record
+  const isEmailConfirmed = user.user_metadata?.is_verified === true || vendor.is_email_verified === true;
+
   return (
     <>
+      {!isEmailConfirmed && (
+        <VerificationBanner email={user.email || ''} />
+      )}
       {children}
     </>
   );
 }
+

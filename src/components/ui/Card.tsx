@@ -23,6 +23,10 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ 
   <h3 className={`font-semibold leading-none tracking-tight text-xl ${className}`} {...props} />
 );
 
+export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({ className = '', ...props }) => (
+  <p className={`text-sm text-slate-500 ${className}`} {...props} />
+);
+
 export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className = '', ...props }) => (
   <div className={`p-6 pt-0 ${className}`} {...props} />
 );

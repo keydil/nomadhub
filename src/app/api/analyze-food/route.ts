@@ -32,10 +32,11 @@ export async function POST(req: NextRequest) {
       You are an expert culinary marketer and AI assistant for a mobile F&B SaaS platform.
       Analyze the provided image of food.
       
-      Provide your response in raw JSON format (without any markdown blocks or code fences) with exactly these three keys:
+      Provide your response in raw JSON format (without any markdown blocks or code fences) with exactly these four keys:
       1. "title": A catchy, appetizing name for the dish.
       2. "description": A mouth-watering, marketing-friendly description of the dish.
       3. "suggestedPrice": An estimated reasonable price for this street food / food truck dish in Indonesian Rupiah (IDR). Format it as a string without 'Rp', just numbers and separators, e.g., "45.000".
+      4. "category": A short, broad category for this item (e.g., "Makanan Utama", "Minuman", "Gorengan", "Snack", "Dessert", "Frozen Food", etc).
       
       Respond ONLY with the JSON object.
     `;

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface HeroProductProps {
@@ -61,17 +61,18 @@ export function HeroProduct({ name, description, hashtags = [], imageUrl, onExpl
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mb-6 sm:mb-12 inline-block rounded-xl bg-[#4A3F35]/80 px-6 py-3 text-[10px] font-black uppercase tracking-[0.3em] text-[#D4AF37] backdrop-blur-md border border-[#D4AF37]/20"
+            className="mb-6 sm:mb-12 inline-flex items-center gap-2 rounded-full bg-amber-900/20 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.25em] text-amber-200 backdrop-blur-md border border-amber-500/20 shadow-lg"
           >
+            <Sparkles className="h-3 w-3" />
             Signature Experience
           </motion.span>
           
           {/* The Multi-style Title */}
           <div className="mb-4 sm:mb-8 flex flex-col items-center">
-            <h1 className="text-5xl sm:text-7xl font-serif text-[#BFDBFE] leading-[1.1] tracking-tight mb-2 drop-shadow-2xl">
+            <h1 className="text-5xl sm:text-7xl font-serif text-white leading-[1.1] tracking-tight mb-2 drop-shadow-2xl">
               {name.split(' ').slice(0, -1).join(' ')}
             </h1>
-            <h1 className="text-5xl sm:text-7xl font-serif italic text-[#FACC15] leading-[1.1] tracking-tight drop-shadow-2xl">
+            <h1 className="text-5xl sm:text-7xl font-serif italic text-amber-300 leading-[1.1] tracking-tight drop-shadow-2xl">
               {name.split(' ').slice(-1)}
             </h1>
           </div>
@@ -101,11 +102,10 @@ export function HeroProduct({ name, description, hashtags = [], imageUrl, onExpl
             </motion.div>
           )}
           
-          {/* The Big Yellow Button */}
           <div className="w-full">
             <Button 
               onClick={onExplore}
-              className="group relative w-full h-16 sm:h-20 rounded-2xl bg-[#FACC15] text-slate-900 text-base sm:text-lg font-black uppercase tracking-widest transition-all hover:bg-[#EAB308] hover:scale-[1.02] active:scale-[0.98] shadow-[0_20px_50px_rgba(250,204,21,0.2)] border-none"
+              className="group relative w-full h-16 sm:h-20 rounded-2xl bg-gradient-to-b from-amber-200 via-amber-300 to-amber-500 text-amber-950 text-base sm:text-lg font-black uppercase tracking-widest transition-all hover:from-amber-100 hover:via-amber-200 hover:to-amber-400 hover:scale-[1.02] active:scale-[0.98] shadow-[0_15px_35px_rgba(251,191,36,0.25)] border border-amber-300"
             >
               <span className="flex items-center justify-center gap-4">
                 Explore Menu
