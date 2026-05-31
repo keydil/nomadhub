@@ -22,34 +22,35 @@
 ### 1. Multi-Tenant Root Routing & Custom Domain (`src/proxy.ts`)
 *   **Clean URL Portofolio**: Menggunakan arsitektur Root Slug dinamis `/[vendorSlug]` (contoh: `nomadhub.app/mr-churraos`) alih-alih subfolder kaku.
 *   **Intelligent Proxy**: Middleware cerdas yang otomatis mengekstrak identitas vendor dari domain masuk untuk mendukung pemetaan domain pribadi pelanggan (*Custom Domain* seperti `namatoko.my.id`).
+*   **Strict Multi-Tenant Isolation**: Menjamin keamanan data antar penyewa, memisahkan secara ketat *Real-time Subscription*, keranjang belanja, hingga histori pemesanan.
 
-### 2. White-Label Smart SEO Metadata (Bunglon Mode 🦎)
-*   **Deteksi Domain Adaptif**: Sistem secara dinamis mendeteksi rute akses.
-*   **Total Penyamaran**: Jika diakses via domain premium pelanggan, identitas "NomadHub" otomatis disembunyikan 100% dari mesin pencari Google dan pratinjau media sosial, diganti dengan merek asli vendor demi profesionalitas tingkat tinggi.
-
-### 3. Enterprise Auth & Secured Workspaces (Multi-Tenant Engine)
+### 2. Enterprise Auth & Secured Workspaces
 *   **Elite Auth Flow**: Desain halaman `/login` dan `/signup` bergaya premium dengan dukungan multi-login (Google OAuth & Email/Password).
-*   **Dynamic Onboarding**: Alur pendaftaran vendor otomatis yang terintegrasi di halaman `/onboarding` untuk mengonfigurasi *Store Name*, *Description*, dan *Slug* URL.
-*   **Supabase SSR Middleware**: Seluruh akses ke `/dashboard` dan `/onboarding` diproteksi secara ketat menggunakan *Server-side Middleware*. Pengguna yang belum *login* dialihkan ke `/login`, sedangkan pengguna terautentikasi yang belum memiliki toko dialihkan ke alur pendaftaran.
-*   **Tenant Isolation**: Akses data (*menu*, *queue*, *store status*) terikat erat dengan identitas pengguna (`owner_id`), bukan URL statis, menjamin isolasi data antar penyewa (*tenant*).
+*   **Dynamic Onboarding**: Alur pendaftaran vendor (Progressive Disclosure) otomatis di halaman `/onboarding` untuk mengonfigurasi *Store Name*, *Description*, dan *Slug* URL.
+*   **Supabase SSR Middleware**: Memproteksi seluruh akses ke `/dashboard` secara *Server-Side*. Akses data terikat erat dengan identitas pengguna (`owner_id`), bukan URL statis.
 
-### 4. AI Magic Menu & Marketing Assistant (Gemini 2.5 Flash)
-*   **Vision AI 2.5 Analysis**: Mengidentifikasi jenis masakan secara otomatis dari foto makanan yang diunggah, menghasilkan nama serta rekomendasi harga secara akurat.
+### 3. AI Magic Menu & Marketing Assistant (Gemini 2.5 Flash)
+*   **Vision AI 2.5 Analysis**: Mengidentifikasi jenis masakan secara otomatis dari foto yang diunggah, menghasilkan nama serta rekomendasi harga secara akurat.
 *   **✨ Magic Polish Prompting**: Mesin copywriting pintar yang mengolah nama masakan menjadi deskripsi pemasaran yang menggugah selera lengkap dengan *hashtags* spesifik.
-*   **Respon Terkendali**: Menggunakan setelan paksa `responseMimeType: "application/json"` untuk memastikan struktur keluaran AI 100% stabil anti-eror.
 
-### 5. Cloud Media Vault (Supabase Storage & RLS)
-*   **Binary Secure Upload**: Mengirimkan file dari server component langsung ke Bucket Supabase menggunakan penamaan terproteksi UUID kelas militer (`crypto.randomUUID()`).
-*   **Tangguh & Terpantau**: Audit logs penuh di terminal server jika terjadi kendala RLS maupun jaringan.
+### 4. Smart Real-Time Customer Queue & Playful UI
+*   **Live Interaction**: Sinkronisasi *real-time* 2 arah antara layar pembeli dan dasbor penjual menggunakan *Supabase Realtime Channels*.
+*   **Playful Animation Zone**: Desain premium pelacakan pesanan (Orders Tab) dengan *Giant Progress Orb*, animasi kurir motor meluncur (*Delivery*), dan tas belanja memantul (*Pickup*).
+*   **Multi-Sensory Feedback**: Saat pesanan matang/selesai, HP pelanggan bergetar (`Vibrate API`), membunyikan bel notifikasi, dan memicu hujan konfeti ganda. Dasbor penjual juga membunyikan "Ding!" saat ada pesanan masuk.
 
-### 6. Smart Real-Time Customer Queue & Playful UI
-*   **Live Interaction**: Menghubungkan layar pembeli dan dasbor penjual secara interaktif.
-*   **Playful Animation**: Menyajikan desain premium untuk pelacakan pesanan (Orders Tab) dengan animasi "LiveQueueTracker" (Roda dinamis, Kurir motor meluncur untuk *Delivery*, dan animasi memantul untuk *Pickup*).
-*   **Multi-Sensory Feedback**: Saat pesanan selesai, HP pelanggan otomatis bergetar (`Vibrate API`), membunyikan bel notifikasi, dan memunculkan hujan konfeti ganda!
+### 5. Enterprise Payment & Order Management
+*   **Interactive QRIS Flow**: Simulasi pembayaran *cashless* interaktif dengan *timer* *countdown* dan integrasi status `Paid/Pending` langsung ke Supabase.
+*   **Opsi Fleksibel**: Mendukung metode pembayaran Tunai (*Cash*) dan Transfer Manual, lengkap dengan metode pengambilan pesanan (*Pickup* di konter atau *Delivery* ke meja/alamat).
+*   **Table Tracking**: Sistem pelacakan meja pelanggan yang terintegrasi langsung ke dalam struk dan keranjang pemesanan.
 
-### 7. Ultra-Smooth Shimmer Layout & Vendor Isolation
-*   Peralihan halaman tanpa *blank-screen* menggunakan kerangka pemuatan dinamis (Skeleton UI) bawaan Next.js `loading.tsx` untuk transisi data yang selembut sutra.
-*   **Strict Multi-Tenant Isolation**: Menjamin keamanan data antar penyewa, memisahkan secara ketat *Real-time Subscription*, keranjang belanja, hingga status pembayaran (mendukung alur QRIS interaktif).
+### 6. Progressive Cart System & Storefront
+*   **Smart Cart Enforcement**: Mencegah pemesanan silang antar vendor dengan aturan *Single-Vendor Cart*.
+*   **Promo Engine**: Dukungan injeksi kode voucher/diskon (contoh: *Gratis Ongkir*, *Diskon Spesial*).
+*   **Ultra-Smooth Shimmer Layout**: Peralihan halaman tanpa *blank-screen* menggunakan kerangka pemuatan (Skeleton UX) bawaan Next.js.
+
+### 7. Cloud Media Vault & Vendor Utilities
+*   **Print-Ready QR Posters**: Generator otomatis poster QR Code toko (*high-res*) yang langsung bisa diunduh atau dicetak oleh vendor.
+*   **Binary Secure Upload**: Mengirimkan file langsung ke Bucket Supabase menggunakan penamaan terproteksi UUID kelas militer (`crypto.randomUUID()`).
 
 ---
 
